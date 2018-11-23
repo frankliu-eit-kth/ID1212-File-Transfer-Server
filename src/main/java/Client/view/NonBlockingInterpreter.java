@@ -31,9 +31,9 @@ import java.rmi.server.UnicastRemoteObject;
 import java.util.Scanner;
 
 import Client.net.CommunicationListener;
-import Common.Credentials;
-import Common.FTClient;
-import Common.FTServer;
+import Common.SerializableCredentials;
+import Common.RemoteFTClient;
+import Common.RemoteFTServer;
 
 /**
  * Reads and interprets user commands. The command interpreter will run in a separate thread, which
@@ -45,8 +45,8 @@ public class NonBlockingInterpreter implements Runnable {
     private static final String PROMPT = "> ";
     private final Scanner console = new Scanner(System.in);
     private final ThreadSafeStdOut outMgr = new ThreadSafeStdOut();
-    private final FTClient myRemoteObj;
-    private FTServer server;
+    private final RemoteFTClient myRemoteObj;
+    private RemoteFTServer server;
     private long myIdAtServer;
     private boolean receivingCmds = false;
 
@@ -132,8 +132,8 @@ public class NonBlockingInterpreter implements Runnable {
                                                   RemoteException {
     	//look up for server in registry
     	//get the stub
-        server = (FTServer) Naming.lookup(
-                "//" + host + "/" + FTServer.SERVER_NAME_IN_REGISTRY);
+        server = (RemoteFTServer) Naming.lookup(
+                "//" + host + "/" + RemoteFTServer.SERVER_NAME_IN_REGISTRY);
     }
 
     private String readNextLine() {
@@ -141,7 +141,7 @@ public class NonBlockingInterpreter implements Runnable {
         return console.nextLine();
     }
 
-    private class ConsoleOutput extends UnicastRemoteObject implements FTClient,CommunicationListener {
+    private class ConsoleOutput extends UnicastRemoteObject implements RemoteFTClient,CommunicationListener {
 
         public ConsoleOutput() throws RemoteException {
         }

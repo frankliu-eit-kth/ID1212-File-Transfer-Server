@@ -3,17 +3,17 @@ package Server.controller;
 import java.rmi.RemoteException;
 import java.rmi.server.UnicastRemoteObject;
 
-import Common.Credentials;
-import Common.FTClient;
-import Common.FTServer;
-import Server.dao.AccountDAO;
-import Server.model.Account;
+import Common.SerializableCredentials;
+import Common.RemoteFTClient;
+import Common.RemoteFTServer;
+import Server.dao.AccountOperationDAO;
+import Server.model.PersistantAccount;
 
-public class Controller extends UnicastRemoteObject implements FTServer {
-	AccountDAO acctDao=new AccountDAO();
+public class RemoteController extends UnicastRemoteObject implements RemoteFTServer {
+	AccountOperationDAO acctDao=new AccountOperationDAO();
 	//FTClient remoteClient;
 	
-	public Controller() throws RemoteException {
+	public RemoteController() throws RemoteException {
 		//this.remoteClient=remoteClient;
 	}
 
@@ -27,7 +27,7 @@ public class Controller extends UnicastRemoteObject implements FTServer {
 	@Override
 	public boolean checkUserExists(String username) throws RemoteException {
 		// TODO Auto-generated method stub
-		Account acct=acctDao.FindAccountByName(username, true);
+		PersistantAccount acct=acctDao.FindAccountByName(username, true);
 		if(acct==null) {
 			return false;
 		}
@@ -38,13 +38,13 @@ public class Controller extends UnicastRemoteObject implements FTServer {
 	}
 
 	@Override
-	public boolean register(Credentials credentials) throws RemoteException {
+	public boolean register(SerializableCredentials credentials) throws RemoteException {
 		// TODO Auto-generated method stub
 		return false;
 	}
 
 	@Override
-	public void login(FTClient remoteClient, Credentials credentials) throws RemoteException {
+	public void login(RemoteFTClient remoteClient, SerializableCredentials credentials) throws RemoteException {
 		// TODO Auto-generated method stub
 
 	}

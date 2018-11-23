@@ -5,14 +5,14 @@ import java.io.Serializable;
 /**
  * Identifies a user.
  */
-public class Credentials implements Serializable {
+public class SerializableCredentials implements Serializable {
     private final String username;
     private final String password;
 
     /**
      * Creates a new instance with the specified username and password.
      */
-    public Credentials(String username, String password) {
+    public SerializableCredentials(String username, String password) {
         this.username = username;
         this.password = password;
     }

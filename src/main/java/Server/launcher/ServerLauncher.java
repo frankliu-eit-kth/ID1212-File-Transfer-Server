@@ -6,7 +6,7 @@ import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 
-import Server.controller.Controller;
+import Server.controller.RemoteController;
 
 
 public class ServerLauncher {
@@ -24,12 +24,16 @@ public class ServerLauncher {
 
 	    private void startRMIServant() throws RemoteException, MalformedURLException {
 	        try {
+	        	//returns a reference to the registry on localhost 1099
 	            LocateRegistry.getRegistry().list();
 	        } catch (RemoteException noRegistryRunning) {
+	        	//create a new registry
 	            LocateRegistry.createRegistry(Registry.REGISTRY_PORT);
 	        }
-	        Controller contr = new Controller();
-	        Naming.rebind(Controller.SERVER_NAME_IN_REGISTRY, contr);
+	        
+	        RemoteController contr = new RemoteController();
+	        //bind the server name with the controller reference
+	        Naming.rebind(RemoteController.SERVER_NAME_IN_REGISTRY, contr);
 	    }
 
 	    private void parseCommandLineArgs(String[] args) {

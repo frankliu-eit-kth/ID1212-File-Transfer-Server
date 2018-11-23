@@ -16,7 +16,7 @@ import javax.persistence.NamedQuery;
 })
 
 @Entity(name = "Account")
-public class Account {
+public class PersistantAccount {
 	@Id
 	@Column(name = "id", nullable = false)
 	@GeneratedValue(strategy = GenerationType.AUTO)
@@ -29,7 +29,7 @@ public class Account {
 	private String password;
 	
 	
-	private Account(String username,String password) {
+	private PersistantAccount(String username,String password) {
 		// TODO Auto-generated constructor stub
 		this.username=username;
 		this.password=password;
