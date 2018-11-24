@@ -7,7 +7,7 @@ import Common.SerializableCredentials;
 import Common.RemoteFTClient;
 import Common.RemoteFTServer;
 import Server.dao.AccountOperationDAO;
-import Server.model.PersistantAccount;
+import Server.model.Account;
 
 public class RemoteController extends UnicastRemoteObject implements RemoteFTServer {
 	AccountOperationDAO acctDao=new AccountOperationDAO();
@@ -27,7 +27,7 @@ public class RemoteController extends UnicastRemoteObject implements RemoteFTSer
 	@Override
 	public boolean checkUserExists(String username) throws RemoteException {
 		// TODO Auto-generated method stub
-		PersistantAccount acct=acctDao.FindAccountByName(username, true);
+		Account acct=acctDao.FindAccountByName(username, true);
 		if(acct==null) {
 			return false;
 		}

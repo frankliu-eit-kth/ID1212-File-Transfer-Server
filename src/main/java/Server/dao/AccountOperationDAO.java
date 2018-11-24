@@ -6,7 +6,7 @@ import javax.persistence.EntityTransaction;
 import javax.persistence.NoResultException;
 import javax.persistence.Persistence;
 
-import Server.model.PersistantAccount;
+import Server.model.Account;
 
 public class AccountOperationDAO {
 	/**
@@ -26,11 +26,14 @@ public class AccountOperationDAO {
 	  *   connection handled by the framework
 	  */
 	 public AccountOperationDAO() {
-		 
+		 /**
+		  * @debug:
+		  * 
+		  */
 	        emFactory = Persistence.createEntityManagerFactory("jpaUnit");
 	    }
 	 
-	 public PersistantAccount FindAccountByName(String userName,boolean endTransactionAfterSearching) {
+	 public Account FindAccountByName(String userName,boolean endTransactionAfterSearching) {
 		 if (userName == null) {
 	            return null;
 	        }
@@ -38,7 +41,7 @@ public class AccountOperationDAO {
 	        try {
 	            EntityManager em = createNewManagerAndStartTransaction();
 	            try {
-	                return em.createNamedQuery("findAccountByName", PersistantAccount.class).
+	                return em.createNamedQuery("findAccountByName", Account.class).
 	                        setParameter("userName", userName).getSingleResult();
 	            } catch (NoResultException noSuchAccount) {
 	                return null;
@@ -66,5 +69,6 @@ public class AccountOperationDAO {
  */
 	    private void commitTransaction() {
 	        threadLocalEntityManager.get().getTransaction().commit();
+	        
 	    }
 }

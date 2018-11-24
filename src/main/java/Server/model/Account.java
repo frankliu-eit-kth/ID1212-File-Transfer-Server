@@ -5,18 +5,29 @@ import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.LockModeType;
 import javax.persistence.NamedQueries;
 import javax.persistence.NamedQuery;
+import javax.persistence.Version;
 
 @NamedQueries({
+	/**
+	 * 
+	 * @author Frank
+	 * @debug:
+	 *		NameQuery xxxx not found: check the class name in persistence.xml
+	 *		Syntax error" check the syntax
+	 *		there must be a versionNum field in the class if lockMode is set
+	 */
     @NamedQuery(
             name = "findAccountByName",
-            query = "SELECT acct FROM Account acct where WHERE acct.name LIKE :userName;"
+            query = "SELECT acct FROM Account acct WHERE acct.username LIKE :userName",
+            lockMode = LockModeType.OPTIMISTIC
     )
 })
 
 @Entity(name = "Account")
-public class PersistantAccount {
+public class Account {
 	@Id
 	@Column(name = "id", nullable = false)
 	@GeneratedValue(strategy = GenerationType.AUTO)
@@ -28,8 +39,15 @@ public class PersistantAccount {
 	@Column(name = "password", nullable = false)
 	private String password;
 	
+	 @Version
+	 @Column(name = "OPTLOCK")//for optimistic lock
+	 private int versionNum;
 	
-	private PersistantAccount(String username,String password) {
+	private Account() {
+		super();
+	}
+	
+	private Account(String username,String password) {
 		// TODO Auto-generated constructor stub
 		this.username=username;
 		this.password=password;
