@@ -10,7 +10,7 @@ import javax.persistence.NamedQueries;
 import javax.persistence.NamedQuery;
 import javax.persistence.Version;
 
-import Common.SerializableCredentials;
+import Common.Credentials;
 
 @NamedQueries({
 	/**
@@ -48,7 +48,7 @@ public class Account {
 	private Account() {
 		super();
 	}
-	public Account(SerializableCredentials credentials) {
+	public Account(Credentials credentials) {
 		// TODO Auto-generated constructor stub
 		this.username=credentials.getUsername();
 		this.password=credentials.getPassword();

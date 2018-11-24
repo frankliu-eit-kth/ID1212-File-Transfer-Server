@@ -7,10 +7,10 @@ import javax.persistence.EntityTransaction;
 import javax.persistence.NoResultException;
 import javax.persistence.Persistence;
 
-import Common.SerializableCredentials;
+import Common.Credentials;
 import Server.model.Account;
 
-public class AccountOperationDAO {
+public class AccountDAO {
 	/**
 	 * use eneity manager factory create entity manager
 	 */
@@ -27,15 +27,15 @@ public class AccountOperationDAO {
 	  *	 unit(connection to database) been configured in persistence.xml
 	  *   connection handled by the framework
 	  */
-	 public AccountOperationDAO() {
+	 public AccountDAO() {
 		 /**
 		  * @debug:
 		  * 
 		  */
 	        emFactory = Persistence.createEntityManagerFactory("jpaUnit");
-	    }
+	 }
 	 
-	 public long createNewAccount(SerializableCredentials credentials) {
+	 public long persistNewAccount(Credentials credentials) {
 		 String username=credentials.getUsername();
 		 String password=credentials.getPassword();
 		 if(username==null||password==null) {

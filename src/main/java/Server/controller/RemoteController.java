@@ -4,21 +4,22 @@ import java.rmi.RemoteException;
 import java.rmi.server.UnicastRemoteObject;
 import java.util.HashMap;
 
-import Common.RemoteFTClient;
-import Common.RemoteFTServer;
-import Common.SerializableCredentials;
-import Server.dao.AccountOperationDAO;
+import Common.Credentials;
+import Common.RemoteClient;
+import Common.RemoteServer;
+import Server.dao.AccountDAO;
 import Server.model.Account;
 
-public class RemoteController extends UnicastRemoteObject implements RemoteFTServer {
-	private AccountOperationDAO acctDao=new AccountOperationDAO();
-	private HashMap<Long, RemoteFTClient> clientMap=new HashMap<Long,RemoteFTClient>();
+public class RemoteController extends UnicastRemoteObject implements RemoteServer {
+	private AccountDAO acctDao=new AccountDAO();
+	private HashMap<Long, RemoteClient> onlineClients=new HashMap<Long,RemoteClient>();
 	//FTClient remoteClient;
 	
 	public RemoteController() throws RemoteException {
-		//this.remoteClient=remoteClient;
+		super();
 	}
 
+	/*
 	@Override
 	public boolean checkLoginState(long userId) throws RemoteException{
 		// TODO Auto-generated method stub
@@ -28,7 +29,7 @@ public class RemoteController extends UnicastRemoteObject implements RemoteFTSer
 			
 		}
 		return false;
-	}
+	}*/
 
 	@Override
 	public boolean checkUserExists(String username) throws RemoteException {
@@ -44,30 +45,30 @@ public class RemoteController extends UnicastRemoteObject implements RemoteFTSer
 	}
 
 	@Override
-	public long register(SerializableCredentials credentials) throws RemoteException {
+	public long register(Credentials credentials) throws RemoteException {
 		// TODO Auto-generated method stub
-		return acctDao.createNewAccount(credentials);
+		return acctDao.persistNewAccount(credentials);
 	}
 
 	@Override
-	public long login (RemoteFTClient remoteClient, SerializableCredentials credentials) throws RemoteException {
+	public long login (RemoteClient remoteClient, Credentials credentials) throws RemoteException {
 		// TODO Auto-generated method stub
 			
 			Account account= acctDao.FindAccountByName(credentials.getUsername(), true);
 			if(account.getUsername().equals(credentials.getUsername())&&account.getPassword().equals(credentials.getPassword())) {
 				long loggedInUserId=account.getUserId();
-				this.clientMap.put(loggedInUserId, remoteClient);
+				this.onlineClients.put(loggedInUserId, remoteClient);
 				return account.getUserId();
 			}
 			else return 0;
 	}
 	
 	@Override
-	public boolean userLeave(long userId) throws RemoteException{
-		if(clientMap.get(userId)==null) {
+	public boolean clientLeave(long userId) throws RemoteException{
+		if(onlineClients.get(userId)==null) {
 			return false;
 		}else {
-			clientMap.remove(userId);
+			onlineClients.remove(userId);
 			return true;
 		}
 		

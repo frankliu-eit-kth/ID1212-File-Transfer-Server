@@ -31,9 +31,9 @@ import java.rmi.server.UnicastRemoteObject;
 import java.util.Scanner;
 
 import Client.net.CommunicationListener;
-import Common.RemoteFTClient;
-import Common.RemoteFTServer;
-import Common.SerializableCredentials;
+import Common.RemoteClient;
+import Common.RemoteServer;
+import Common.Credentials;
 
 /**
  * Reads and interprets user commands. The command interpreter will run in a separate thread, which
@@ -45,8 +45,8 @@ public class NonBlockingInterpreter implements Runnable {
     private static final String PROMPT = "> ";
     private final Scanner console = new Scanner(System.in);
     private final ThreadSafeStdOut outMgr = new ThreadSafeStdOut();
-    private final RemoteFTClient myRemoteObj;
-    private RemoteFTServer remoteServer;
+    private final RemoteClient myRemoteObj;
+    private RemoteServer remoteServer;
     private long myIdAtServer;
     private boolean receivingCmds = false;
 
@@ -75,7 +75,7 @@ public class NonBlockingInterpreter implements Runnable {
         while (receivingCmds) {
         	String username=null;
         	String password=null;
-        	SerializableCredentials credentials=null;
+        	Credentials credentials=null;
             try {
                 CmdLine cmdLine = new CmdLine(readNextLine());
                 switch (cmdLine.getCmd()) {
@@ -117,7 +117,7 @@ public class NonBlockingInterpreter implements Runnable {
                 		System.out.println("user exists, please retry");
                 		break;
                 	}
-                	credentials=new SerializableCredentials(username,password);
+                	credentials=new Credentials(username,password);
                 	long newUserId=remoteServer.register(credentials);
                 	outMgr.println("welcome "+username+" ! You've registered! Your user Id is "+ newUserId);
                 	break;
@@ -136,7 +136,7 @@ public class NonBlockingInterpreter implements Runnable {
                 		System.out.println("user does not exist, please retry");
                 		break;
                 	}
-                	credentials=new SerializableCredentials(username,password);
+                	credentials=new Credentials(username,password);
                 	this.myIdAtServer=remoteServer.login(myRemoteObj, credentials);
                 	if(myIdAtServer==0) {
                 		System.out.println("user name does not match the password, please try again");
@@ -149,7 +149,7 @@ public class NonBlockingInterpreter implements Runnable {
                 		outMgr.println("you have not logged in");
                 		break;
                 	}else {
-                		if(remoteServer.userLeave(myIdAtServer)) {
+                		if(remoteServer.clientLeave(myIdAtServer)) {
                 			receivingCmds = false;
                 			this.remoteServer=null;
                 			this.myIdAtServer=0;
@@ -176,8 +176,8 @@ public class NonBlockingInterpreter implements Runnable {
                                                   RemoteException {
     	//look up for server in registry
     	//get the stub
-        remoteServer = (RemoteFTServer) Naming.lookup(
-                "//" + host + "/" + RemoteFTServer.SERVER_NAME_IN_REGISTRY);
+        remoteServer = (RemoteServer) Naming.lookup(
+                "//" + host + "/" + RemoteServer.SERVER_NAME_IN_REGISTRY);
     }
 
     private String readNextLine() {
@@ -185,11 +185,12 @@ public class NonBlockingInterpreter implements Runnable {
         return console.nextLine();
     }
 
-    private class ConsoleOutput extends UnicastRemoteObject implements RemoteFTClient,CommunicationListener {
+    private class ConsoleOutput extends UnicastRemoteObject implements RemoteClient,CommunicationListener {
 
         public ConsoleOutput() throws RemoteException {
         }
         
+        @Override
         public void notify(String msg) {
         	outMgr.println(msg);
         }
