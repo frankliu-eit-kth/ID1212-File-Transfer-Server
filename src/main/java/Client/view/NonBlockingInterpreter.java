@@ -31,9 +31,9 @@ import java.rmi.server.UnicastRemoteObject;
 import java.util.Scanner;
 
 import Client.net.CommunicationListener;
-import Common.SerializableCredentials;
 import Common.RemoteFTClient;
 import Common.RemoteFTServer;
+import Common.SerializableCredentials;
 
 /**
  * Reads and interprets user commands. The command interpreter will run in a separate thread, which
@@ -46,7 +46,7 @@ public class NonBlockingInterpreter implements Runnable {
     private final Scanner console = new Scanner(System.in);
     private final ThreadSafeStdOut outMgr = new ThreadSafeStdOut();
     private final RemoteFTClient myRemoteObj;
-    private RemoteFTServer server;
+    private RemoteFTServer remoteServer;
     private long myIdAtServer;
     private boolean receivingCmds = false;
 
@@ -73,6 +73,9 @@ public class NonBlockingInterpreter implements Runnable {
     @Override
     public void run() {
         while (receivingCmds) {
+        	String username=null;
+        	String password=null;
+        	SerializableCredentials credentials=null;
             try {
                 CmdLine cmdLine = new CmdLine(readNextLine());
                 switch (cmdLine.getCmd()) {
@@ -97,27 +100,68 @@ public class NonBlockingInterpreter implements Runnable {
                         server.broadcastMsg(myIdAtServer, cmdLine.getUserInput());
                 }
                 */
-                case REGISTER:
+                case CONNECT:
                 	lookupServer(cmdLine.getParameter(0));
-                	String username=cmdLine.getParameter(1);
-                	//String password=cmdLine.getParameter(2);
-                	/*if(server.checkLoginState(myIdAtServer)) {
+                	System.out.println("successful connected to "+ remoteServer.SERVER_NAME_IN_REGISTRY);
+                	break;
+                case REGISTER:
+                	//lookupServer(cmdLine.getParameter(0));
+                	username=cmdLine.getParameter(0);
+                	password=cmdLine.getParameter(1);
+                	if(myIdAtServer!=0) {
+                		System.out.println("you have already logged in, please log out");
+                		break;
+                		
+                	}
+                	if(remoteServer.checkUserExists(username)) {
+                		System.out.println("user exists, please retry");
+                		break;
+                	}
+                	credentials=new SerializableCredentials(username,password);
+                	long newUserId=remoteServer.register(credentials);
+                	outMgr.println("welcome "+username+" ! You've registered! Your user Id is "+ newUserId);
+                	break;
+                case LOGIN:
+                	//lookupServer(cmdLine.getParameter(0));
+                	username=cmdLine.getParameter(0);
+                	password=cmdLine.getParameter(1);
+                	//System.out.println("Test: username "+username);
+                	
+                	if(myIdAtServer!=0) {
+                		System.out.println("you have already logged in, please log out");
+                		break;
+                		
+                	}
+                	if(!remoteServer.checkUserExists(username)) {
+                		System.out.println("user does not exist, please retry");
+                		break;
+                	}
+                	credentials=new SerializableCredentials(username,password);
+                	this.myIdAtServer=remoteServer.login(myRemoteObj, credentials);
+                	if(myIdAtServer==0) {
+                		System.out.println("user name does not match the password, please try again");
+                		break;
+                	}
+                	outMgr.println("welcome "+username+" ! You've logged in! Your user Id is"+ this.myIdAtServer);
+                	break;
+                case QUIT:
+                	if(myIdAtServer==0) {
+                		outMgr.println("you have not logged in");
                 		break;
                 	}else {
-                		System.out.println("123");
-                	}*/
-                	
-                	if(server.checkUserExists(username)) {
-                		System.out.println("user exists");
-                		break;
-                	}else {
-                		System.out.println("user does not exist");
-                		break;
-                	}/*
-                	Credentials credentials=new Credentials(username,password);
-                	server.login(myRemoteObj,credentials);
-                	*/
-                	
+                		if(remoteServer.userLeave(myIdAtServer)) {
+                			receivingCmds = false;
+                			this.remoteServer=null;
+                			this.myIdAtServer=0;
+                			boolean forceUnexport = false;
+                            UnicastRemoteObject.unexportObject(myRemoteObj, forceUnexport);
+                			outMgr.println("succssfully quit");
+                		}
+                		else {
+                			outMgr.println("quit failed, please try again");
+                		}
+                	}
+                	break;
                 default:
                 	break;
                 } 
@@ -132,7 +176,7 @@ public class NonBlockingInterpreter implements Runnable {
                                                   RemoteException {
     	//look up for server in registry
     	//get the stub
-        server = (RemoteFTServer) Naming.lookup(
+        remoteServer = (RemoteFTServer) Naming.lookup(
                 "//" + host + "/" + RemoteFTServer.SERVER_NAME_IN_REGISTRY);
     }
 

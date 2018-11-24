@@ -1,11 +1,13 @@
 package Server.dao;
 
+import javax.persistence.Entity;
 import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
 import javax.persistence.EntityTransaction;
 import javax.persistence.NoResultException;
 import javax.persistence.Persistence;
 
+import Common.SerializableCredentials;
 import Server.model.Account;
 
 public class AccountOperationDAO {
@@ -32,6 +34,26 @@ public class AccountOperationDAO {
 		  */
 	        emFactory = Persistence.createEntityManagerFactory("jpaUnit");
 	    }
+	 
+	 public long createNewAccount(SerializableCredentials credentials) {
+		 String username=credentials.getUsername();
+		 String password=credentials.getPassword();
+		 if(username==null||password==null) {
+			 System.out.println("username or password illegal");
+			 return 0;
+		 }
+
+	        try {
+	           EntityManager em = createNewManagerAndStartTransaction();
+	           em.persist(new Account(credentials));
+	           Account persistedAccount=em.createNamedQuery("findAccountByName",Account.class).setParameter("userName", credentials.getUsername()).getSingleResult();
+	           return persistedAccount.getUserId();
+	            
+	        } finally {
+	              commitTransaction();
+	        }
+	 }
+	 
 	 
 	 public Account FindAccountByName(String userName,boolean endTransactionAfterSearching) {
 		 if (userName == null) {

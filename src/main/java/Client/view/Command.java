@@ -29,6 +29,9 @@ package Client.view;
 public enum Command {
 	
   REGISTER,
+  LOGIN,
+  CONNECT,
+  QUIT,
   NO_COMMAND
   
 }

@@ -10,6 +10,8 @@ import javax.persistence.NamedQueries;
 import javax.persistence.NamedQuery;
 import javax.persistence.Version;
 
+import Common.SerializableCredentials;
+
 @NamedQueries({
 	/**
 	 * 
@@ -46,21 +48,14 @@ public class Account {
 	private Account() {
 		super();
 	}
-	
-	private Account(String username,String password) {
+	public Account(SerializableCredentials credentials) {
 		// TODO Auto-generated constructor stub
-		this.username=username;
-		this.password=password;
-		
+		this.username=credentials.getUsername();
+		this.password=credentials.getPassword();
 	}
-
-	
-	
 	public long getUserId() {
 		return userId;
 	}
-
-
 
 	public void setUserId(long userId) {
 		this.userId = userId;
