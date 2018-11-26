@@ -29,4 +29,9 @@ public interface RemoteServer extends Remote {
 	 * @throws RemoteException
 	 */
 	public long login(RemoteClient remoteClient,Credentials credentials) throws RemoteException;
+
+	public boolean checkFileExists(String filename) throws RemoteException;
+	
+	public void storeFile(long userId, String filename) throws RemoteException;
+
 }

@@ -25,6 +25,11 @@ import Common.Credentials;
             name = "findAccountByName",
             query = "SELECT acct FROM Account acct WHERE acct.username LIKE :userName",
             lockMode = LockModeType.OPTIMISTIC
+    ),
+    @NamedQuery(
+            name = "findAccountById",
+            query = "SELECT acct FROM Account acct WHERE acct.userId LIKE :id",
+            lockMode = LockModeType.OPTIMISTIC
     )
 })
 

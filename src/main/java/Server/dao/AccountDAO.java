@@ -76,6 +76,26 @@ public class AccountDAO {
 	        }
 	 }
 	 
+	 public Account FindAccountById(long id,boolean endTransactionAfterSearching) {
+		 if (id == 0) {
+	            return null;
+	        }
+
+	        try {
+	            EntityManager em = createNewManagerAndStartTransaction();
+	            try {
+	                return em.createNamedQuery("findAccountById", Account.class).
+	                        setParameter("id", id).getSingleResult();
+	            } catch (NoResultException noSuchAccount) {
+	                return null;
+	            }
+	        } finally {
+	            if (endTransactionAfterSearching) {
+	              commitTransaction();
+	            }
+	        }
+	 }
+	 
 	 
 	 private EntityManager createNewManagerAndStartTransaction() {
 	        EntityManager em = emFactory.createEntityManager();

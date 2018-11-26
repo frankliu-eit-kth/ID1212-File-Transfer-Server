@@ -33,6 +33,7 @@ public enum Command {
   CONNECT,
   QUIT,
   LIST_ALL,
+  STORE,
   NO_COMMAND
   
 }

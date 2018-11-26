@@ -35,6 +35,7 @@ import java.util.Scanner;
 import Client.controller.NetworkController;
 import Client.net.OutputHandler;
 import Common.Credentials;
+import Common.LocalFileController;
 import Common.RemoteClient;
 import Common.RemoteServer;
 
@@ -109,6 +110,28 @@ public class NonBlockingInterpreter implements Runnable {
                         server.broadcastMsg(myIdAtServer, cmdLine.getUserInput());
                 }
                 */
+                case STORE:
+                	if(myIdAtServer==0) {
+                		outMgr.println("you have not logged in");
+                		break;
+                	}
+                	String filename= cmdLine.getParameter(0);
+                	System.out.println(filename);
+                	String url=cmdLine.getParameter(1);
+                	File file= LocalFileController.readFile(url);
+                	if(file==null) {
+                		System.out.println("wrong directory, please try again");
+                		break;
+                	}
+                	if(remoteServer.checkFileExists(filename)) {
+                		System.out.println("file already exists, please choose update command");
+                		break;
+                	}
+                	netController.sendFile(file, localOutputHandler);
+                	remoteServer.storeFile(this.myIdAtServer,filename);
+                	break;
+                	
+                	
                 case CONNECT:
                 	String host=cmdLine.getParameter(0);
                 	lookupServer(host);

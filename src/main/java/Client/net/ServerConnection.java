@@ -41,6 +41,15 @@ public class ServerConnection {
          new Thread(new Listener(broadcastHandler)).start();
     }
     
+    public void sendFile(File file) throws Exception{
+    	
+    	try {
+			toServer.writeObject(file);
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+    }
    
     
     private class Listener implements Runnable {
@@ -57,6 +66,7 @@ public class ServerConnection {
                     outputHandler.handleFile((File)fromServer.readObject());
                 }
             } catch (Throwable connectionFailure) {
+            	connectionFailure.printStackTrace();
                 if (connected) {
                     outputHandler.handleMsg("Lost connection.");
                 }

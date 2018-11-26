@@ -27,13 +27,22 @@ public class FileTransferServer{
     }
     private void serve() {
         try {
-            ServerSocket listeningSocket = new ServerSocket(portNo);
+            ServerSocket listeningSocket=null;
+			try {
+				listeningSocket = new ServerSocket(portNo);
+			} catch (Exception e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+				listeningSocket.close();
+			}
             while (true) {
                 Socket clientSocket = listeningSocket.accept();
                 startHandler(clientSocket);
             }
-        } catch (IOException e) {
+        } catch (Exception e) {
             System.err.println("Server failure.");
+            e.printStackTrace();
+            
         }
     }
     private void startHandler(Socket clientSocket) throws SocketException {

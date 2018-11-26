@@ -6,6 +6,9 @@ import java.util.HashMap;
 public class FileWarehouse {
 	public static HashMap<String,File> storage;
 	
+	public static File getFile(String filename) {
+		return storage.get(filename);
+	}
 	
 	public static boolean putFile(String filename,File file) {
 		if(storage.get(filename)!=null) {

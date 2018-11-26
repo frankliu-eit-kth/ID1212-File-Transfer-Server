@@ -1,5 +1,6 @@
 package Client.controller;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.util.concurrent.CompletableFuture;
@@ -19,5 +20,14 @@ public class NetworkController {
             }
         }).thenRun(() -> outputHandler.handleMsg("Connected to " + host + ":" + port));
     }
-
+	
+	public void sendFile(File file,OutputHandler outputHandler) {
+		try {
+			serverConnection.sendFile(file);
+		}catch(Exception e) {
+			outputHandler.handleMsg("sending file failed, io exeception");
+			e.printStackTrace();
+		}
+		outputHandler.handleMsg("sending file successful");
+	}
 }

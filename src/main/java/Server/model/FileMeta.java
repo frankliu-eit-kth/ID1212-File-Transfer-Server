@@ -18,6 +18,10 @@ import Common.FileMetaInterface;
 	@NamedQuery(
             name = "findAllFileMetadata",
             query = "SELECT file FROM File file"
+    ),
+	@NamedQuery(
+            name = "findFileByName",
+            query = "SELECT file FROM File file WHERE file.filename LIKE :filename"
     )
 })
 
@@ -61,6 +65,54 @@ public class FileMeta implements FileMetaInterface {
 	}
 	
 	
+	public long getFileId() {
+		return fileId;
+	}
+
+	public void setFileId(long fileId) {
+		this.fileId = fileId;
+	}
+
+	public String getFilename() {
+		return filename;
+	}
+
+	public void setFilename(String filename) {
+		this.filename = filename;
+	}
+
+	public int getSize() {
+		return size;
+	}
+
+	public void setSize(int size) {
+		this.size = size;
+	}
+
+	public Account getOwner() {
+		return owner;
+	}
+
+	public void setOwner(Account owner) {
+		this.owner = owner;
+	}
+
+	public String getUrl() {
+		return url;
+	}
+
+	public void setUrl(String url) {
+		this.url = url;
+	}
+
+	public String getPermission() {
+		return permission;
+	}
+
+	public void setPermission(String permission) {
+		this.permission = permission;
+	}
+
 	@Override
 	public String toString() {
 		return "PersistantFileMeta [fileId=" + fileId + ", filename=" + filename + ", size=" + size + ", owner=" +owner.getUsername() 

@@ -1,5 +1,6 @@
 package Server.dao;
 
+import java.io.File;
 import java.util.List;
 
 import javax.persistence.EntityManager;
@@ -18,6 +19,24 @@ public class FileDao {
 		
 	        emFactory = Persistence.createEntityManagerFactory("jpaUnit");
 	 }
+	
+	public boolean checkFileExists(String filename) {
+		try {
+	           EntityManager em = createNewManagerAndStartTransaction();
+	          
+	           List<FileMeta> filemeta= em.createNamedQuery("findFileByName",FileMeta.class).setParameter("filename", filename).getResultList();
+	           if(filemeta.size()==0) {
+	        	   return false;
+	           }
+	           else {
+	        	   return true;
+	           }
+	            
+	        } finally {
+	              //commitTransaction();
+	        }
+	}
+	
 	public List<FileMeta>findAll() {
 		 try {
 	           EntityManager em = createNewManagerAndStartTransaction();
@@ -30,7 +49,7 @@ public class FileDao {
 	        }
 	}
 	
-	private void storeNewFileMeta(FileMeta file) {
+	public void storeNewFileMeta(FileMeta file) {
 		try {
 			EntityManager em = createNewManagerAndStartTransaction();
             em.persist(file);
