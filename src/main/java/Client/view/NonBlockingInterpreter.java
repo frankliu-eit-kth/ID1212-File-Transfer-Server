@@ -23,17 +23,20 @@
  */
 package Client.view;
 
+import java.io.File;
 import java.net.MalformedURLException;
 import java.rmi.Naming;
 import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
 import java.rmi.server.UnicastRemoteObject;
+import java.util.HashMap;
 import java.util.Scanner;
 
-import Client.net.CommunicationListener;
+import Client.controller.NetworkController;
+import Client.net.OutputHandler;
+import Common.Credentials;
 import Common.RemoteClient;
 import Common.RemoteServer;
-import Common.Credentials;
 
 /**
  * Reads and interprets user commands. The command interpreter will run in a separate thread, which
@@ -46,13 +49,19 @@ public class NonBlockingInterpreter implements Runnable {
     private final Scanner console = new Scanner(System.in);
     private final ThreadSafeStdOut outMgr = new ThreadSafeStdOut();
     private final RemoteClient myRemoteObj;
+    private final OutputHandler localOutputHandler;
     private RemoteServer remoteServer;
     private long myIdAtServer;
     private boolean receivingCmds = false;
+    private HashMap<String,File> fileStorage=new HashMap<String,File>();
+    private NetworkController netController;
+    private final int SERVER_PORT=8080;
 
     public NonBlockingInterpreter() throws RemoteException {
     	//why remote-> send to server,invoked by server
-        myRemoteObj = new ConsoleOutput();
+        myRemoteObj = new RemoteConsoleOutput();
+        localOutputHandler=new localConsoleOutput();
+        netController=new NetworkController();
     }
 
     /**
@@ -101,7 +110,10 @@ public class NonBlockingInterpreter implements Runnable {
                 }
                 */
                 case CONNECT:
-                	lookupServer(cmdLine.getParameter(0));
+                	String host=cmdLine.getParameter(0);
+                	lookupServer(host);
+                	System.out.println(host);
+                	netController.connect(host, SERVER_PORT, localOutputHandler);
                 	System.out.println("successful connected to "+ remoteServer.SERVER_NAME_IN_REGISTRY);
                 	break;
                 case REGISTER:
@@ -144,6 +156,14 @@ public class NonBlockingInterpreter implements Runnable {
                 	}
                 	outMgr.println("welcome "+username+" ! You've logged in! Your user Id is"+ this.myIdAtServer);
                 	break;
+                case LIST_ALL:
+                	if(myIdAtServer==0) {
+                		outMgr.println("you have not logged in");
+                		break;
+                	}
+                	remoteServer.listAll(myRemoteObj);
+                	break;
+                	
                 case QUIT:
                 	if(myIdAtServer==0) {
                 		outMgr.println("you have not logged in");
@@ -185,20 +205,31 @@ public class NonBlockingInterpreter implements Runnable {
         return console.nextLine();
     }
 
-    private class ConsoleOutput extends UnicastRemoteObject implements RemoteClient,CommunicationListener {
+    private class RemoteConsoleOutput extends UnicastRemoteObject implements RemoteClient{
 
-        public ConsoleOutput() throws RemoteException {
+        public RemoteConsoleOutput() throws RemoteException {
         }
         
         @Override
         public void notify(String msg) {
         	outMgr.println(msg);
         }
-        /**
-        @Override
-        public void recvMsg(String msg) {
-            outMgr.println((String) msg);
-        }
-        */
+       
+        
+      
+    }
+    
+    private class localConsoleOutput implements OutputHandler{
+    	  @Override
+          public void handleMsg(String msg) {
+              outMgr.println((String) msg);
+          }
+          
+          @Override
+          public void handleFile(File file) {
+          	String filename=file.getName();
+          	outMgr.println(filename+" received");
+          	fileStorage.put(filename, file);
+          }
     }
 }

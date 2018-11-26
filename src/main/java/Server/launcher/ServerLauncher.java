@@ -6,7 +6,8 @@ import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 
-import Server.controller.RemoteController;
+import Server.net.FileTransferServer;
+import Server.net.RemoteController;
 
 
 public class ServerLauncher {
@@ -17,6 +18,7 @@ public class ServerLauncher {
 	            launcher.parseCommandLineArgs(args);
 	            launcher.startRMIServant();
 	            System.out.println("server started.");
+	            FileTransferServer.main(args);
 	        } catch (RemoteException | MalformedURLException e) {
 	            e.printStackTrace();
 	        }

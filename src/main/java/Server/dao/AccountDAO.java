@@ -9,6 +9,7 @@ import javax.persistence.Persistence;
 
 import Common.Credentials;
 import Server.model.Account;
+import Server.model.FileMeta;
 
 public class AccountDAO {
 	/**
@@ -34,7 +35,7 @@ public class AccountDAO {
 		  */
 	        emFactory = Persistence.createEntityManagerFactory("jpaUnit");
 	 }
-	 
+	
 	 public long persistNewAccount(Credentials credentials) {
 		 String username=credentials.getUsername();
 		 String password=credentials.getPassword();

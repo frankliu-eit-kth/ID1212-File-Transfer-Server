@@ -1,17 +1,21 @@
-package Server.controller;
+package Server.net;
 
 import java.rmi.RemoteException;
 import java.rmi.server.UnicastRemoteObject;
 import java.util.HashMap;
+import java.util.List;
 
 import Common.Credentials;
 import Common.RemoteClient;
 import Common.RemoteServer;
 import Server.dao.AccountDAO;
+import Server.dao.FileDao;
 import Server.model.Account;
+import Server.model.FileMeta;
 
 public class RemoteController extends UnicastRemoteObject implements RemoteServer {
 	private AccountDAO acctDao=new AccountDAO();
+	private FileDao fileDao=new FileDao();
 	private HashMap<Long, RemoteClient> onlineClients=new HashMap<Long,RemoteClient>();
 	//FTClient remoteClient;
 	
@@ -30,7 +34,16 @@ public class RemoteController extends UnicastRemoteObject implements RemoteServe
 		}
 		return false;
 	}*/
-
+	
+	@Override
+	public void listAll(RemoteClient remoteClient) throws RemoteException {
+		// TODO Auto-generated method stub
+		List<FileMeta> files=fileDao.findAll();
+		for(FileMeta f: files) {
+			String s=f.toString();
+			remoteClient.notify(s);
+		}
+	}
 	@Override
 	public boolean checkUserExists(String username) throws RemoteException {
 		// TODO Auto-generated method stub

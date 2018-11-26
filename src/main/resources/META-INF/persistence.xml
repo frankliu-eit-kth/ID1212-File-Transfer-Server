@@ -3,6 +3,7 @@
     <persistence-unit name="jpaUnit" transaction-type="RESOURCE_LOCAL">
         <provider>org.eclipse.persistence.jpa.PersistenceProvider</provider>
         <class>Server.model.Account</class>
+        <class>Server.model.FileMeta</class>
        
         <properties>
             <property name="javax.persistence.jdbc.url" value="jdbc:mysql://localhost:3306/serverDB?serverTimezone=UTC"/>

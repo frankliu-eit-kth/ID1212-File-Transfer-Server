@@ -32,6 +32,7 @@ public enum Command {
   LOGIN,
   CONNECT,
   QUIT,
+  LIST_ALL,
   NO_COMMAND
   
 }
