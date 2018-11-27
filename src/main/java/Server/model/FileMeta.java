@@ -23,6 +23,7 @@ import Common.FileMetaInterface;
             name = "findFileByName",
             query = "SELECT file FROM File file WHERE file.filename LIKE :filename"
     )
+	
 })
 
 @Entity(name = "File")

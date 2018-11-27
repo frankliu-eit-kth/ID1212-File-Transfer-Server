@@ -34,6 +34,8 @@ public enum Command {
   QUIT,
   LIST_ALL,
   STORE,
+  PERMISSION,
+  REMOVE,
   NO_COMMAND
   
 }

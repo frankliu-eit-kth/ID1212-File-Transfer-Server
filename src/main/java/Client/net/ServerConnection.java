@@ -41,6 +41,12 @@ public class ServerConnection {
          new Thread(new Listener(broadcastHandler)).start();
     }
     
+    public void disconnect() throws IOException {
+        socket.close();
+        socket = null;
+        connected = false;
+    }
+    
     public void sendFile(File file) throws Exception{
     	
     	try {
@@ -61,8 +67,10 @@ public class ServerConnection {
 
         @Override
         public void run() {
+        	/*
             try {
                 for (;;) {
+                	
                     outputHandler.handleFile((File)fromServer.readObject());
                 }
             } catch (Throwable connectionFailure) {
@@ -71,6 +79,7 @@ public class ServerConnection {
                     outputHandler.handleMsg("Lost connection.");
                 }
             }
+            */
         }
 
     

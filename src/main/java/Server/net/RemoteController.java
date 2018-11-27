@@ -27,6 +27,50 @@ public class RemoteController extends UnicastRemoteObject implements RemoteServe
 	}
 
 	@Override
+	public String checkFilePermission(long userId, String filename) throws RemoteException {
+		FileMeta file=fileDao.findFile(filename);
+		Account acct=file.getOwner();
+		if(userId==acct.getUserId()) {
+			return "write";
+		}
+		else {
+			return file.getPermission();
+		}
+	}
+	
+	@Override
+	public boolean removeFile(String filename) throws RemoteException {
+		if(!(LocalFileController.deleteFile(SERVER_FILE_DIRECTORY+filename))) {
+			return false;
+		}
+		if(!fileDao.removeFile(filename)) {
+			return false;
+		}
+		
+		return true;
+		
+	}
+	@Override
+	public boolean checkFileOwner(long userId, String filename) throws RemoteException {
+		Account owner=fileDao.findFileOwner(filename).getOwner();
+		if(userId==owner.getUserId()) {
+			return true;
+		}else {
+			return false;
+		}
+	}
+	
+	@Override
+	public boolean changePermission(String filename, String permission) throws RemoteException {
+		FileMeta file=fileDao.findFile(filename);
+		file.setPermission(permission);
+		fileDao.updateFileMeta(file);
+		return true;
+		
+	}
+	
+	
+	@Override
 	public boolean checkFileExists(String filename) {
 		return fileDao.checkFileExists(filename);
 	}

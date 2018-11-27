@@ -33,5 +33,13 @@ public interface RemoteServer extends Remote {
 	public boolean checkFileExists(String filename) throws RemoteException;
 	
 	public void storeFile(long userId, String filename) throws RemoteException;
+	
+	public boolean checkFileOwner(long userId,String filename) throws RemoteException;
+	
+	public boolean changePermission(String filename,String permission) throws RemoteException;
+	
+	public String checkFilePermission(long userId,String filename) throws RemoteException;
+	
+	public boolean removeFile(String filenanme) throws RemoteException;
 
 }

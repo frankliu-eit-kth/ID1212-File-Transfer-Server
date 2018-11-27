@@ -16,11 +16,15 @@ public class LocalFileController {
 		return new File(uri);
 	}
 	
-	public static void deleteFile(String uri) {
+	public static boolean deleteFile(String uri) {
 		 File file = new File(uri);
 	        if(file.delete()){
 	            System.out.println(uri+" File deleted");
-	        }else System.out.println(uri+" doesn't exists");
+	            return true;
+	        }else {
+	        	System.out.println(uri+" doesn't exists");
+	        	return false;
+	        }
 	}
 	
 	public static void updateFile(String dirName,File file) {

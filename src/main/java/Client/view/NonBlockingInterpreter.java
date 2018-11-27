@@ -85,6 +85,7 @@ public class NonBlockingInterpreter implements Runnable {
         while (receivingCmds) {
         	String username=null;
         	String password=null;
+        	String filename=null;
         	Credentials credentials=null;
             try {
                 CmdLine cmdLine = new CmdLine(readNextLine());
@@ -110,15 +111,46 @@ public class NonBlockingInterpreter implements Runnable {
                         server.broadcastMsg(myIdAtServer, cmdLine.getUserInput());
                 }
                 */
+                case REMOVE:
+                	if(myIdAtServer==0) {
+                		outMgr.println("you have not logged in");
+                		break;
+                	}
+                	filename= cmdLine.getParameter(0);
+                	if(!remoteServer.checkFileExists(filename)) {
+                		System.out.println("file does not exist");
+                		break;
+                	}
+                	if(remoteServer.checkFilePermission(myIdAtServer,filename).equals("read")) {
+                		System.out.println("you do not have permission to remove file");
+                		break;
+                	}
+                	else {
+                		if(remoteServer.removeFile(filename)) {
+                			System.out.println("successfully remove");
+                			break;
+                		}else {
+                			System.out.println("remove failed");
+                			break;
+                		}
+                		
+                	}
+                case UPDATE:
+                	if(myIdAtServer==0) {
+                		outMgr.println("you have not logged in");
+                		break;
+                	}
+                	break;
                 case STORE:
                 	if(myIdAtServer==0) {
                 		outMgr.println("you have not logged in");
                 		break;
                 	}
-                	String filename= cmdLine.getParameter(0);
+                	filename= cmdLine.getParameter(0);
                 	System.out.println(filename);
                 	String url=cmdLine.getParameter(1);
                 	File file= LocalFileController.readFile(url);
+                
                 	if(file==null) {
                 		System.out.println("wrong directory, please try again");
                 		break;
@@ -130,7 +162,33 @@ public class NonBlockingInterpreter implements Runnable {
                 	netController.sendFile(file, localOutputHandler);
                 	remoteServer.storeFile(this.myIdAtServer,filename);
                 	break;
-                	
+                case PERMISSION:
+                	if(myIdAtServer==0) {
+                		outMgr.println("you have not logged in");
+                		break;
+                	}
+                	filename= cmdLine.getParameter(0);
+                	String permission=cmdLine.getParameter(1);
+                	if(!(permission.equals("read")||permission.equals("wirte"))){
+                		System.out.println("illegal permission");
+                		break;
+                	}
+                	if(!remoteServer.checkFileExists(filename)) {
+                		System.out.println("file does not exist, please check the file name");
+                		break;
+                	}
+                	if(!remoteServer.checkFileOwner(myIdAtServer, filename)) {
+                		System.out.println("you have no right to update this file");
+                		break;
+                	}else {
+                		if(remoteServer.changePermission(filename,permission)) {
+                			System.out.println("update successful！");
+                		}else {
+                			System.out.println("update failed");
+                		}
+                			
+                	}
+                	break;
                 	
                 case CONNECT:
                 	String host=cmdLine.getParameter(0);

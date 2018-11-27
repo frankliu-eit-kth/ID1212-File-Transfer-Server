@@ -4,7 +4,7 @@ import java.io.File;
 import java.util.HashMap;
 
 public class FileWarehouse {
-	public static HashMap<String,File> storage;
+	public static HashMap<String,File> storage=new HashMap<String,File>();
 	
 	public static File getFile(String filename) {
 		return storage.get(filename);

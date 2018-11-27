@@ -19,7 +19,17 @@ public class FileDao {
 		
 	        emFactory = Persistence.createEntityManagerFactory("jpaUnit");
 	 }
-	
+	public boolean removeFile(String filename) {
+		try {
+			EntityManager em = createNewManagerAndStartTransaction();
+			FileMeta filemeta = em.createNamedQuery("findFileByName", FileMeta.class).setParameter("filename", filename)
+					.getSingleResult();
+			em.remove(filemeta);
+			return true;
+		} finally {
+			commitTransaction();
+		}
+	}
 	public boolean checkFileExists(String filename) {
 		try {
 	           EntityManager em = createNewManagerAndStartTransaction();
@@ -33,10 +43,31 @@ public class FileDao {
 	           }
 	            
 	        } finally {
-	              //commitTransaction();
+	              commitTransaction();
 	        }
 	}
-	
+	public FileMeta findFile(String filename) {
+		try {
+	           EntityManager em = createNewManagerAndStartTransaction();
+	          
+	           FileMeta filemeta= em.createNamedQuery("findFileByName",FileMeta.class).setParameter("filename", filename).getSingleResult();
+	           return filemeta;
+	            
+	        } finally {
+	              commitTransaction();
+	        }
+	}
+	public FileMeta findFileOwner(String filename) {
+		try {
+	           EntityManager em = createNewManagerAndStartTransaction();
+	          
+	           FileMeta filemeta= em.createNamedQuery("findFileByName",FileMeta.class).setParameter("filename", filename).getSingleResult();
+	           return filemeta;
+	            
+	        } finally {
+	              commitTransaction();
+	        }
+	}
 	public List<FileMeta>findAll() {
 		 try {
 	           EntityManager em = createNewManagerAndStartTransaction();
@@ -53,6 +84,15 @@ public class FileDao {
 		try {
 			EntityManager em = createNewManagerAndStartTransaction();
             em.persist(file);
+		}finally {
+            commitTransaction();
+        }
+	}
+	
+	public void updateFileMeta(FileMeta file) {
+		try {
+			EntityManager em = createNewManagerAndStartTransaction();
+			em.merge(file);
 		}finally {
             commitTransaction();
         }

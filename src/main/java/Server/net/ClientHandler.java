@@ -57,6 +57,7 @@ public class ClientHandler implements Runnable {
 	        }
 	        connected = false;
 	        server.removeHandler(this);
+	        System.out.println("client leave");
 	    }
 
 }
