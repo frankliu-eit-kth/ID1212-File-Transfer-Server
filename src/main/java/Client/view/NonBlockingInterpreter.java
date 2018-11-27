@@ -25,6 +25,7 @@ package Client.view;
 
 import java.io.File;
 import java.net.MalformedURLException;
+import java.net.Socket;
 import java.rmi.Naming;
 import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
@@ -223,7 +224,9 @@ public class NonBlockingInterpreter implements Runnable {
                 		break;
                 	}
                 	String locationFolder=cmdLine.getParameter(1);
+                	Socket mySocket= netController.getSocket();
                 	remoteServer.sendFile(filename);
+                	netController.sendFileRequest(filename);
                 	break;
                 case CONNECT:
                 	String host=cmdLine.getParameter(0);

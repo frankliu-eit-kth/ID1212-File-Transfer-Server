@@ -3,6 +3,7 @@ package Client.controller;
 import java.io.File;
 import java.io.IOException;
 import java.io.UncheckedIOException;
+import java.net.Socket;
 import java.util.concurrent.CompletableFuture;
 
 import Client.net.OutputHandler;
@@ -29,5 +30,13 @@ public class NetworkController {
 			e.printStackTrace();
 		}
 		outputHandler.handleMsg("sending file successful");
+	}
+	
+	public Socket getSocket() {
+		return serverConnection.getSocket();
+	}
+	
+	public void sendFileRequest(String filename) {
+		serverConnection.sendFilename(filename);
 	}
 }

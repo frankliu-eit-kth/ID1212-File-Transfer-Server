@@ -1,6 +1,7 @@
 package Server.net;
 
 import java.io.File;
+import java.net.Socket;
 import java.rmi.RemoteException;
 import java.rmi.server.UnicastRemoteObject;
 import java.util.HashMap;
@@ -30,7 +31,7 @@ public class RemoteController extends UnicastRemoteObject implements RemoteServe
 		FileMeta fileMeta=fileDao.findFile(filename);
 		String url=fileMeta.getUrl();
 		File file=LocalFileController.readFile(url);
-		FileWarehouse.putFile(filename, file);
+		FileWarehouse.sendingStorage.put(filename, file);
 		
 	}
 	@Override

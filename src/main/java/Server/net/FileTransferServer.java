@@ -5,6 +5,7 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.SocketException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 
 
@@ -12,7 +13,8 @@ import java.util.List;
 public class FileTransferServer{
 	private static final int LINGER_TIME = 5000;
     private static final int TIMEOUT_HALF_HOUR = 1800000;
-    private final List<ClientHandler> clientHandlers = new ArrayList<>();
+    public final List<ClientHandler> clientHandlers = new ArrayList<>();
+    //public final HashMap<Socket,ClientHandler> clientHandlers = new HashMap<Socket,ClientHandler>();
     private int portNo = 8080;
 	
     public static void main(String[] args) {

@@ -1,11 +1,12 @@
 package Server.model;
 
 import java.io.File;
+import java.net.Socket;
 import java.util.HashMap;
 
 public class FileWarehouse {
 	public static HashMap<String,File> receivingStorage=new HashMap<String,File>();
-	
+	public static HashMap<String,File> sendingStorage=new HashMap<String,File>();
 	public static File getFile(String filename) {
 		return receivingStorage.get(filename);
 	}

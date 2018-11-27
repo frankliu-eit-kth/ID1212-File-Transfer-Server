@@ -7,6 +7,8 @@ import java.io.ObjectOutputStream;
 import java.net.InetSocketAddress;
 import java.net.Socket;
 
+import Common.Message;
+
 public class ServerConnection {
 
 	/*
@@ -57,6 +59,15 @@ public class ServerConnection {
 		}
     }
    
+    public void sendFilename(String filename) {
+    	try {
+    		Message msg=new Message(filename);
+			toServer.writeObject(msg);
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+    }
     
     private class Listener implements Runnable {
         private final OutputHandler outputHandler;
@@ -67,7 +78,7 @@ public class ServerConnection {
 
         @Override
         public void run() {
-        	/*
+        	
             try {
                 for (;;) {
                 	
@@ -79,11 +90,13 @@ public class ServerConnection {
                     outputHandler.handleMsg("Lost connection.");
                 }
             }
-            */
+            
         }
-
+ 
+    }
     
-        
+    public Socket getSocket() {
+    	return this.socket;
     }
 
 }
