@@ -57,6 +57,7 @@ public class NonBlockingInterpreter implements Runnable {
     private HashMap<String,File> fileStorage=new HashMap<String,File>();
     private NetworkController netController;
     private final int SERVER_PORT=8080;
+    private String DEFAULT_LOCAL_FOLDER="C:\\Users\\m1339\\Desktop\\CLIENT\\";
 
     public NonBlockingInterpreter() throws RemoteException {
     	//why remote-> send to server,invoked by server
@@ -86,7 +87,9 @@ public class NonBlockingInterpreter implements Runnable {
         	String username=null;
         	String password=null;
         	String filename=null;
+        	String url=null;
         	Credentials credentials=null;
+        	File localFile=null;
             try {
                 CmdLine cmdLine = new CmdLine(readNextLine());
                 switch (cmdLine.getCmd()) {
@@ -140,6 +143,26 @@ public class NonBlockingInterpreter implements Runnable {
                 		outMgr.println("you have not logged in");
                 		break;
                 	}
+                	
+                	filename= cmdLine.getParameter(0);
+                	url=cmdLine.getParameter(1);
+                	if(!remoteServer.checkFileExists(filename)) {
+                		System.out.println("file does not exist");
+                		break;
+                	}
+                	if(remoteServer.checkFilePermission(myIdAtServer,filename).equals("read")) {
+                		System.out.println("you do not have permission to update file");
+                		break;
+                	}
+                	localFile= LocalFileController.readFile(url);
+                    
+                	if(localFile==null) {
+                		System.out.println("wrong directory, please try again");
+                		break;
+                	}
+                	netController.sendFile(localFile, localOutputHandler);
+                	remoteServer.updateFile(this.myIdAtServer,filename);
+                	
                 	break;
                 case STORE:
                 	if(myIdAtServer==0) {
@@ -148,10 +171,10 @@ public class NonBlockingInterpreter implements Runnable {
                 	}
                 	filename= cmdLine.getParameter(0);
                 	System.out.println(filename);
-                	String url=cmdLine.getParameter(1);
-                	File file= LocalFileController.readFile(url);
+                	url=cmdLine.getParameter(1);
+                	localFile= LocalFileController.readFile(url);
                 
-                	if(file==null) {
+                	if(localFile==null) {
                 		System.out.println("wrong directory, please try again");
                 		break;
                 	}
@@ -159,7 +182,7 @@ public class NonBlockingInterpreter implements Runnable {
                 		System.out.println("file already exists, please choose update command");
                 		break;
                 	}
-                	netController.sendFile(file, localOutputHandler);
+                	netController.sendFile(localFile, localOutputHandler);
                 	remoteServer.storeFile(this.myIdAtServer,filename);
                 	break;
                 case PERMISSION:
@@ -169,7 +192,7 @@ public class NonBlockingInterpreter implements Runnable {
                 	}
                 	filename= cmdLine.getParameter(0);
                 	String permission=cmdLine.getParameter(1);
-                	if(!(permission.equals("read")||permission.equals("wirte"))){
+                	if(!(permission.equals("read")||permission.equals("write"))){
                 		System.out.println("illegal permission");
                 		break;
                 	}
@@ -186,10 +209,22 @@ public class NonBlockingInterpreter implements Runnable {
                 		}else {
                 			System.out.println("update failed");
                 		}
-                			
                 	}
                 	break;
+                case RETRIEVE:
+                	if(myIdAtServer==0) {
+                		outMgr.println("you have not logged in");
+                		break;
+                	}
+                	filename= cmdLine.getParameter(0);
                 	
+                	if(!remoteServer.checkFileExists(filename)) {
+                		System.out.println("file does not exist, please check the file name");
+                		break;
+                	}
+                	String locationFolder=cmdLine.getParameter(1);
+                	remoteServer.sendFile(filename);
+                	break;
                 case CONNECT:
                 	String host=cmdLine.getParameter(0);
                 	lookupServer(host);
@@ -301,7 +336,9 @@ public class NonBlockingInterpreter implements Runnable {
     }
     
     private class localConsoleOutput implements OutputHandler{
-    	  @Override
+    	
+
+		@Override
           public void handleMsg(String msg) {
               outMgr.println((String) msg);
           }
@@ -310,7 +347,8 @@ public class NonBlockingInterpreter implements Runnable {
           public void handleFile(File file) {
           	String filename=file.getName();
           	outMgr.println(filename+" received");
-          	fileStorage.put(filename, file);
+          	LocalFileController.makeDir(DEFAULT_LOCAL_FOLDER);
+          	LocalFileController.storeFile(DEFAULT_LOCAL_FOLDER, file);
           }
     }
 }

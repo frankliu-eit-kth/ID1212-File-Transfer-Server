@@ -92,7 +92,12 @@ public class FileDao {
 	public void updateFileMeta(FileMeta file) {
 		try {
 			EntityManager em = createNewManagerAndStartTransaction();
-			em.merge(file);
+			FileMeta filemeta= em.createNamedQuery("findFileByName",FileMeta.class).setParameter("filename", file.getFilename()).getSingleResult();
+			filemeta.setOwner(file.getOwner());
+			filemeta.setPermission(file.getPermission());
+			filemeta.setSize(file.getSize());
+			filemeta.setUrl(file.getUrl());
+			em.merge(filemeta);
 		}finally {
             commitTransaction();
         }

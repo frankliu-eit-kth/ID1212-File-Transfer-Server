@@ -53,7 +53,7 @@ public class ServerConnection {
 			toServer.writeObject(file);
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
-			e.printStackTrace();
+			
 		}
     }
    

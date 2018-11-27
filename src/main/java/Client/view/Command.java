@@ -36,6 +36,8 @@ public enum Command {
   STORE,
   PERMISSION,
   REMOVE,
+  UPDATE,
+  RETRIEVE,
   NO_COMMAND
   
 }

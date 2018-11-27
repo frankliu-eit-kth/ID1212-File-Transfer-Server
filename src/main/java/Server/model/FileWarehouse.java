@@ -4,18 +4,18 @@ import java.io.File;
 import java.util.HashMap;
 
 public class FileWarehouse {
-	public static HashMap<String,File> storage=new HashMap<String,File>();
+	public static HashMap<String,File> receivingStorage=new HashMap<String,File>();
 	
 	public static File getFile(String filename) {
-		return storage.get(filename);
+		return receivingStorage.get(filename);
 	}
 	
 	public static boolean putFile(String filename,File file) {
-		if(storage.get(filename)!=null) {
+		if(receivingStorage.get(filename)!=null) {
 			System.out.println("file already exists in warehouse");
 			return false;
 		}
-		storage.put(filename, file);
+		receivingStorage.put(filename, file);
 		return true;
 	}
 }

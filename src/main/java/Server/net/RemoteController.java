@@ -25,7 +25,14 @@ public class RemoteController extends UnicastRemoteObject implements RemoteServe
 	public RemoteController() throws RemoteException {
 		super();
 	}
-
+	@Override
+	public void sendFile(String filename) throws RemoteException {
+		FileMeta fileMeta=fileDao.findFile(filename);
+		String url=fileMeta.getUrl();
+		File file=LocalFileController.readFile(url);
+		FileWarehouse.putFile(filename, file);
+		
+	}
 	@Override
 	public String checkFilePermission(long userId, String filename) throws RemoteException {
 		FileMeta file=fileDao.findFile(filename);
@@ -74,7 +81,50 @@ public class RemoteController extends UnicastRemoteObject implements RemoteServe
 	public boolean checkFileExists(String filename) {
 		return fileDao.checkFileExists(filename);
 	}
-	
+	@Override
+	public boolean updateFile(long userId, String filename) throws RemoteException {
+		// TODO Auto-generated method stub
+		RemoteClient clientConsole= onlineClients.get((Long)userId);
+		Account client=acctDao.FindAccountById(userId,true);
+		while(FileWarehouse.getFile(filename)==null) {
+		}
+		File file= FileWarehouse.getFile(filename);
+		FileMeta filemeta=fileDao.findFile(filename);
+		filemeta.setFilename(filename);
+		filemeta.setOwner(client);
+		filemeta.setPermission("read");
+		filemeta.setSize((int)file.length());
+		filemeta.setUrl(SERVER_FILE_DIRECTORY+filename);
+		try {
+			fileDao.updateFileMeta(filemeta);
+		}catch(Exception e) {
+			
+			try {
+				clientConsole.notify("database failure");
+			} catch (RemoteException e1) {
+				// TODO Auto-generated catch block
+				e1.printStackTrace();
+				return false;
+			}
+			e.printStackTrace();
+			return false;
+		}
+		try {
+			LocalFileController.storeFile(SERVER_FILE_DIRECTORY, file);
+		}catch(Exception e) {
+			try {
+				clientConsole.notify("file storage failure");
+			} catch (RemoteException e1) {
+				// TODO Auto-generated catch block
+				e1.printStackTrace();
+				return false;
+			}
+			e.printStackTrace();
+			return false;
+		}
+		return true;
+		
+	}
 	@Override
 	public void storeFile(long userId,String filename) {
 		RemoteClient clientConsole= onlineClients.get((Long)userId);

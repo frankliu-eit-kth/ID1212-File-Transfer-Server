@@ -35,12 +35,13 @@ public class ClientHandler implements Runnable {
         }
 		 while (connected) {
 	            try {
+	            	
 	                File file= (File)fromClient.readObject();
 	                String filename=file.getName();
 	                if(!FileWarehouse.putFile(filename, file)) {
 	                	throw new Exception();
 	                }else {
-	                	System.out.println("test： "+FileWarehouse.storage.toString());
+	                	System.out.println("test： "+FileWarehouse.receivingStorage.toString());
 	                }
 	                
 	            } catch (Exception e) {

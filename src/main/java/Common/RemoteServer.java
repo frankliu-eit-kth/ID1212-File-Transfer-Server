@@ -41,5 +41,9 @@ public interface RemoteServer extends Remote {
 	public String checkFilePermission(long userId,String filename) throws RemoteException;
 	
 	public boolean removeFile(String filenanme) throws RemoteException;
+	
+	public boolean updateFile(long userId, String filename) throws RemoteException;
+	
+	public void sendFile(String filename) throws RemoteException;
 
 }
