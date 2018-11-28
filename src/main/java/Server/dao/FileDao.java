@@ -10,15 +10,41 @@ import javax.persistence.Persistence;
 
 import Server.model.Account;
 import Server.model.FileMeta;
-
+/**
+ * JPA dao
+ * basic data access operations
+ * @mechanism create entity manager factory->use factory to create entity manager->use entity manager to execute query and get results
+ * @author Frank
+ *
+ */
 public class FileDao {
+	
 	private final EntityManagerFactory emFactory;
+	/**
+	 * ThreadLocal —— each thread's own possession
+	 * for different threads will have different entity manager
+	 */
 	private final ThreadLocal<EntityManager> threadLocalEntityManager = new ThreadLocal<>();
 	
 	public FileDao() {
-		
-	        emFactory = Persistence.createEntityManagerFactory("jpaUnit");
+	        emFactory = Persistence.createEntityManagerFactory("jpaUnit");// must be consistant with the xml file
 	 }
+	private EntityManager createNewManagerAndStartTransaction() {
+        EntityManager em = emFactory.createEntityManager();
+        threadLocalEntityManager.set(em);
+        EntityTransaction transaction = em.getTransaction();
+        if (!transaction.isActive()) {
+            transaction.begin();
+        }
+        return em;
+    }
+	/**
+	 * data base will not change if not commit
+	 */
+	private void commitTransaction() {
+	       threadLocalEntityManager.get().getTransaction().commit(); 
+	}
+
 	public boolean removeFile(String filename) {
 		try {
 			EntityManager em = createNewManagerAndStartTransaction();
@@ -103,20 +129,7 @@ public class FileDao {
         }
 	}
 	
-	private EntityManager createNewManagerAndStartTransaction() {
-        EntityManager em = emFactory.createEntityManager();
-        threadLocalEntityManager.set(em);
-        EntityTransaction transaction = em.getTransaction();
-        if (!transaction.isActive()) {
-            transaction.begin();
-        }
-        return em;
-    }
-	 private void commitTransaction() {
-	        threadLocalEntityManager.get().getTransaction().commit();
-	        
-	    }
-
+	
 	public static void main(String[] args) {
 		// TODO Auto-generated method stub
 		AccountDAO acctDao=new AccountDAO();

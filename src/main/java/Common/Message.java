@@ -1,7 +1,11 @@
 package Common;
 
 import java.io.Serializable;
-
+/**
+ * a serializable wrapper for string message
+ * @author m1339
+ *
+ */
 public class Message implements Serializable {
 	private String msg;
 	

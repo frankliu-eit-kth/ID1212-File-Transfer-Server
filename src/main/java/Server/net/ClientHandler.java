@@ -9,7 +9,13 @@ import java.net.Socket;
 
 import Common.Message;
 import Server.model.FileWarehouse;
-
+/**
+ * same old
+ * functions: receiving file->put in storage
+ * 			  receiving retrieve request-> get file from storage->send file to client
+ * @author Frank
+ *
+ */
 public class ClientHandler implements Runnable {
 	private final FileTransferServer server;
     private final Socket clientSocket;
@@ -20,7 +26,7 @@ public class ClientHandler implements Runnable {
     private boolean connected;
    
 	public ClientHandler(FileTransferServer server, Socket clientSocket) {
-		// TODO Auto-generated constructor stub
+		
 		 this.server = server;
 	     this.clientSocket = clientSocket;
 	     connected = true;
@@ -42,11 +48,7 @@ public class ClientHandler implements Runnable {
 	            	if(obj.getClass()==File.class) {
 		                File file= (File)fromClient.readObject();
 		                String filename=file.getName();
-		                if(!FileWarehouse.putFile(filename, file)) {
-		                	throw new Exception();
-		                }else {
-		                	System.out.println("test： "+FileWarehouse.receivingStorage.toString());
-		                }
+		                FileWarehouse.receivingStorage.put(filename, file);
 	            	}else {
 	            		if(obj.getClass()==Message.class) {
 	            			Message msg=(Message)obj;
@@ -71,7 +73,6 @@ public class ClientHandler implements Runnable {
 			toClient.flush();
 			toClient.reset();
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 	}
@@ -83,7 +84,7 @@ public class ClientHandler implements Runnable {
 	        }
 	        connected = false;
 	        server.removeHandler(this);
-	        System.out.println("client leave");
+	        System.out.println("client left");
 	    }
 
 }

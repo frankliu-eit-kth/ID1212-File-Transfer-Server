@@ -8,13 +8,16 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
-
+/**
+ * same old
+ * @author Frank
+ *
+ */
 
 public class FileTransferServer{
 	private static final int LINGER_TIME = 5000;
     private static final int TIMEOUT_HALF_HOUR = 1800000;
     public final List<ClientHandler> clientHandlers = new ArrayList<>();
-    //public final HashMap<Socket,ClientHandler> clientHandlers = new HashMap<Socket,ClientHandler>();
     private int portNo = 8080;
 	
     public static void main(String[] args) {
@@ -33,7 +36,6 @@ public class FileTransferServer{
 			try {
 				listeningSocket = new ServerSocket(portNo);
 			} catch (Exception e) {
-				// TODO Auto-generated catch block
 				e.printStackTrace();
 				listeningSocket.close();
 			}

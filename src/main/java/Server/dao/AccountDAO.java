@@ -29,13 +29,26 @@ public class AccountDAO {
 	  *   connection handled by the framework
 	  */
 	 public AccountDAO() {
-		 /**
-		  * @debug:
-		  * 
-		  */
+		
 	        emFactory = Persistence.createEntityManagerFactory("jpaUnit");
 	 }
-	
+	 private EntityManager createNewManagerAndStartTransaction() {
+	        EntityManager em = emFactory.createEntityManager();
+	        threadLocalEntityManager.set(em);
+	        EntityTransaction transaction = em.getTransaction();
+	        if (!transaction.isActive()) {
+	            transaction.begin();
+	        }
+	        return em;
+	  }
+	/**
+	* @question: why not use em directly in FindAccountByName
+	* @answer: the transaction commits after the finally, need to re-fetch the em
+	*/
+	private void commitTransaction() {
+	   
+		threadLocalEntityManager.get().getTransaction().commit();
+	  }
 	 public long persistNewAccount(Credentials credentials) {
 		 String username=credentials.getUsername();
 		 String password=credentials.getPassword();
@@ -54,7 +67,6 @@ public class AccountDAO {
 	              commitTransaction();
 	        }
 	 }
-	 
 	 
 	 public Account FindAccountByName(String userName,boolean endTransactionAfterSearching) {
 		 if (userName == null) {
@@ -96,22 +108,4 @@ public class AccountDAO {
 	        }
 	 }
 	 
-	 
-	 private EntityManager createNewManagerAndStartTransaction() {
-	        EntityManager em = emFactory.createEntityManager();
-	        threadLocalEntityManager.set(em);
-	        EntityTransaction transaction = em.getTransaction();
-	        if (!transaction.isActive()) {
-	            transaction.begin();
-	        }
-	        return em;
-	    }
-/**
- * @question: why not use em directly in FindAccountByName
- * @answer: the transaction commits after the finally, need to re-fetch the em
- */
-	    private void commitTransaction() {
-	        threadLocalEntityManager.get().getTransaction().commit();
-	        
-	    }
 }

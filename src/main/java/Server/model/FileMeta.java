@@ -11,10 +11,10 @@ import javax.persistence.NamedQueries;
 import javax.persistence.NamedQuery;
 import javax.persistence.OneToOne;
 
-import Common.FileMetaInterface;
-
 @NamedQueries({
-	
+	/**
+	 * JPQL language
+	 */
 	@NamedQuery(
             name = "findAllFileMetadata",
             query = "SELECT file FROM File file"
@@ -25,9 +25,22 @@ import Common.FileMetaInterface;
     )
 	
 })
-
+/**
+ * 
+ * A JPA entity which defines the file information, does not contain file content
+ * -id is generated auto in database
+ * -other fields( including the one-to-one relationship with Account object) will be persisted in the program
+ * 
+ * Set the "javax.persistence.schema-generation.database.action" in the xml file to "nothing" so that JPA will not change the file table in database, 
+ * change to "create-and-drop" the old table will be deleted and new one will be created
+ * 
+ * @problem: cascade relationship still not very clear
+ * 
+ * @author Frank
+ *
+ */
 @Entity(name = "File")
-public class FileMeta implements FileMetaInterface {
+public class FileMeta  {
 	
 	@Id
     @Column(name = "id", nullable = false)
@@ -48,16 +61,13 @@ public class FileMeta implements FileMetaInterface {
 	@Column(name = "url", nullable = false)
     private String url;
 	
-	/**
-	 * 
-	 */
 	@Column(name = "permission", nullable = false)
     private String permission;
 	
 	
 	
 	public FileMeta() {
-		// TODO Auto-generated constructor stub
+		
 	}
 	
 	public FileMeta(String filename,Account acct) {
@@ -116,11 +126,10 @@ public class FileMeta implements FileMetaInterface {
 
 	@Override
 	public String toString() {
-		return "PersistantFileMeta [fileId=" + fileId + ", filename=" + filename + ", size=" + size + ", owner=" +owner.getUsername() 
+		
+		return "File info [fileId=" + fileId + ", filename=" + filename + ", size=" + size + ", owner=" +owner.getUsername() 
 				+ ", url=" + url + ", permission=" + permission + "]";
 	}
-
-
 
 	public static void main(String[] args) {
 		// TODO Auto-generated method stub

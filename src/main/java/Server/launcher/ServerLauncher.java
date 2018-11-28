@@ -15,10 +15,13 @@ public class ServerLauncher {
 	 public static void main(String[] args) {
 	        try {
 	            ServerLauncher launcher=new ServerLauncher();
+	            //register remote controller to registry
 	            launcher.parseCommandLineArgs(args);
 	            launcher.startRMIServant();
-	            System.out.println("server started.");
+	            System.out.println("Remote controller reigstered");
+	            //start file transfer server
 	            FileTransferServer.main(args);
+	            System.out.println("File transfer server started.");
 	        } catch (RemoteException | MalformedURLException e) {
 	            e.printStackTrace();
 	        }

@@ -15,11 +15,12 @@ import Common.Credentials;
 @NamedQueries({
 	/**
 	 * 
-	 * @author Frank
-	 * @debug:
-	 *		NameQuery xxxx not found: check the class name in persistence.xml
-	 *		Syntax error" check the syntax
-	 *		there must be a versionNum field in the class if lockMode is set
+	 * @debug
+	 *		1.NameQuery xxxx not found: check the class name in persistence.xml
+	 *		2.Syntax error" check the syntax
+	 *		3.there must be a versionNum field in the class if lockMode is set
+	 *@concept Optimistic Lock: in low traffic, the resource will never be locked, but a thread will roll back if the resource was updated by others during its transaction
+	 *			Pessimistic Lock: the resource will be locked if a thread gets it. this is used in high traffic to avoid too many roll backs
 	 */
     @NamedQuery(
             name = "findAccountByName",
@@ -32,7 +33,19 @@ import Common.Credentials;
             lockMode = LockModeType.OPTIMISTIC
     )
 })
-
+/**
+ * 
+ * A JPA entity which defines the account information
+ * -id is generated auto in database
+ * -other fields can be persisted in the program
+ * 
+ * Set the "javax.persistence.schema-generation.database.action" in the xml file to "nothing" so that JPA will not change the file table in database, 
+ * change to "create-and-drop" the old table will be deleted and new one will be created
+ * 
+ * 
+ * @author Frank
+ *
+ */
 @Entity(name = "Account")
 public class Account {
 	@Id
@@ -49,12 +62,8 @@ public class Account {
 	 @Version
 	 @Column(name = "OPTLOCK")//for optimistic lock
 	 private int versionNum;
-	
-	private Account() {
-		super();
-	}
+
 	public Account(Credentials credentials) {
-		// TODO Auto-generated constructor stub
 		this.username=credentials.getUsername();
 		this.password=credentials.getPassword();
 	}
