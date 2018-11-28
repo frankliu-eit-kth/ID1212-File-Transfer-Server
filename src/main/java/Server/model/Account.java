@@ -18,6 +18,7 @@ import Common.Credentials;
 	 * @debug
 	 *		1.NameQuery xxxx not found: check the class name in persistence.xml
 	 *		2.Syntax error" check the syntax
+	 *				potential problems: change where->WHERE, check the character of ":"
 	 *		3.there must be a versionNum field in the class if lockMode is set
 	 *@concept Optimistic Lock: in low traffic, the resource will never be locked, but a thread will roll back if the resource was updated by others during its transaction
 	 *			Pessimistic Lock: the resource will be locked if a thread gets it. this is used in high traffic to avoid too many roll backs

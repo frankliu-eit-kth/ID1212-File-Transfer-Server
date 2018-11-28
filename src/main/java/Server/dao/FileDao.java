@@ -114,7 +114,9 @@ public class FileDao {
             commitTransaction();
         }
 	}
-	
+	/**
+	 * @param file
+	 */
 	public void updateFileMeta(FileMeta file) {
 		try {
 			EntityManager em = createNewManagerAndStartTransaction();

@@ -6,7 +6,7 @@ import java.rmi.RemoteException;
 /**
  * provides server interfaces the client could remotely invoke
  * @author Liming Liu
- *
+ * @debug: illegal remote method in Java: add throws RemoteException to all mehtods
  */
 public interface RemoteServer extends Remote {
 	public static final String SERVER_NAME_IN_REGISTRY = "FILE_TRANSFER_SERVER";

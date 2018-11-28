@@ -13,7 +13,7 @@ import Server.model.FileMeta;
 /**
  * 
  * @author Liming Liu
- *
+ * 
  */
 public class AccountDAO {
 	/**
@@ -33,7 +33,10 @@ public class AccountDAO {
 	  *   connection handled by the framework
 	  */
 	 public AccountDAO() {
-		
+		/**
+		 * @debug cannot find persistence unit: copy a new project
+		 * 		  mysql version problem: update to the latest version
+		 */
 	        emFactory = Persistence.createEntityManagerFactory("jpaUnit");
 	 }
 	 private EntityManager createNewManagerAndStartTransaction() {
@@ -46,10 +49,13 @@ public class AccountDAO {
 	        return em;
 	  }
 	/**
-	* @question: why not use em directly in FindAccountByName
-	* @answer: the transaction commits after the finally, need to re-fetch the em
-	*/
-	private void commitTransaction() {
+	 *
+	 * @question: why not use em directly in FindAccountByName
+	 * @answer: the transaction commits after the finally, need to re-fetch the em
+	 * @debug: transaction rolled back: there must be something wrong with the query,
+	 * 									comment out the commit() and see the error stack trace when doing query
+	 */
+	 private void commitTransaction() {
 	   
 		threadLocalEntityManager.get().getTransaction().commit();
 	  }

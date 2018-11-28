@@ -10,6 +10,8 @@ public class ClientLauncher {
  * @author Liming Liu
  * @param args
  * @throws RemoteException
+ * @debug :client connection denied:
+ * 				restart server
  */
 	public static void main(String[] args) throws RemoteException {
 		try {

@@ -10,7 +10,10 @@ import Server.net.FileTransferServer;
 import Server.net.RemoteController;
 
 /**
- * 
+ * @debug: potential problems with mysql:
+ * 			1. mysql passwrod format does not match JPA password format:
+ * 				change the password format to naive password in mysql
+ * 			
  * @author Liming Liu
  *
  */
