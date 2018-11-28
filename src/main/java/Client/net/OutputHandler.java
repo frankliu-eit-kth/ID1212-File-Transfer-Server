@@ -8,6 +8,7 @@ import java.io.File;
  *
  */
 public interface OutputHandler {
+	public void setFileFolder(String fileFolder);
 	
 	public void handleMsg(String msg);
 	

@@ -31,46 +31,14 @@ public class NonBlockingInterpreter implements Runnable {
 	 */
     private static final String PROMPT = "> ";
     private final Scanner console = new Scanner(System.in);
-    private final ThreadSafeStdOut outMgr = new ThreadSafeStdOut();
+    
     private boolean receivingCmds = false;
-    /**
-     * local file folder
-     */
-    public String DEFAULT_LOCAL_FOLDER="C:\\Users\\m1339\\Desktop\\CLIENT\\";
-    /**
-     * remote-method-invoking objects
-     * myRemoteObj: created locally ( a RemoteOutputConsole) and pass to server through remote methods, used to handle the message( just like a remote output controller)
-     * remoteServer: the remote controller fetch from registry and invoke its methods locally do remote operations
-     */
-    private final RemoteClient myRemoteObj;
-    private RemoteServer remoteServer;
-    /**
-     * the local output handler pass to the network layer to deliver message and file
-     */
-    private final OutputHandler localOutputHandler;
-    /**
-     * user status
-     */
-    private long myIdAtServer;
-    
-    
-    /**
-     * network utilities and params
-     */
-    private NetworkController netController;
-    private final int SERVER_PORT=8080;
-    
+    private CommandActions commandActions=new CommandActions();
+    private ThreadSafeStdOut outMgr=new ThreadSafeStdOut();
     
     public NonBlockingInterpreter() throws RemoteException {
-        myRemoteObj = new RemoteConsoleOutput();
-        localOutputHandler=new localConsoleOutput();
-        netController=new NetworkController();
-       
-    }
-
-    
-    
-    
+       super();
+    }    
     /**
      * Interprets and performs user commands.
      */
@@ -78,37 +46,38 @@ public class NonBlockingInterpreter implements Runnable {
     public void run() {
         while (receivingCmds) {
             try {
-                CmdLine cmdLine = new CmdLine(readNextLine());
+                CmdLineParser cmdLine = new CmdLineParser(readNextLine());
                 switch (cmdLine.getCmd()) {
                 case REMOVE:
-                	remove(cmdLine);
+                	commandActions.remove(cmdLine);
                 	break;
                 case UPDATE:
-                	update(cmdLine);
+                	commandActions.update(cmdLine);
                 	break;
                 case STORE:
-                	store(cmdLine);
+                	commandActions.store(cmdLine);
                 	break;
                 case PERMISSION:
-                	permission(cmdLine);
+                	commandActions.permission(cmdLine);
                 	break;
                 case RETRIEVE:
-                	retrieve(cmdLine);
+                	commandActions.retrieve(cmdLine);
                 	break;
                 case CONNECT:
-                	connect(cmdLine);
+                	commandActions.connect(cmdLine);
                 	break;
                 case REGISTER:
-                	register(cmdLine);
+                	commandActions.register(cmdLine);
                 	break;
                 case LOGIN:
-                	login(cmdLine);
+                	commandActions.login(cmdLine);
                 	break;
                 case LISTALL:
-                	listall(cmdLine);
+                	commandActions.listall(cmdLine);
                 	break;
                 case QUIT:
-                	quit(cmdLine);
+                	receivingCmds = false;
+                	commandActions.quit(cmdLine);
                 	break;
                 default:
                 	break;
@@ -120,176 +89,6 @@ public class NonBlockingInterpreter implements Runnable {
         }
     }
 
-    private void remove(CmdLine cmdLine) throws Exception {
-    	if(!checkUserLoggedIn())return; 
-    	String filename= cmdLine.getParameter(0);
-    	if(!remoteServer.checkFileExists(filename)) {
-    		outMgr.println("file does not exist");
-    		return;
-    	}
-    	if(!checkHavePermission(filename)) {
-    		return;
-    	}else {
-    		if(remoteServer.removeFile(filename)) {
-    			outMgr.println("successfully remove");
-    			return;
-    		}else {
-    			outMgr.println("remove failed");
-    			return;
-    		}
-    	}
-    }
-    private void update(CmdLine cmdLine) throws Exception{
-    	if(!checkUserLoggedIn())return; 
-    	
-    	String filename= cmdLine.getParameter(0);
-    	String url=cmdLine.getParameter(1);
-    	if(!remoteServer.checkFileExists(filename)) {
-    		outMgr.println("file does not exist");
-    		return;
-    	}
-    	if(!checkHavePermission(filename)) {
-    		return;
-    	}
-    	File localFile= LocalFileController.readFile(url);
-        
-    	if(localFile==null) {
-    		outMgr.println("wrong directory, please try again");
-    		return;
-    	}
-    	netController.sendFile(localFile, localOutputHandler);
-    	remoteServer.updateFile(this.myIdAtServer,filename);
-    	
-    	return;
-    }
-    private void store(CmdLine cmdLine) throws Exception{
-    	if(!checkUserLoggedIn())return;
-    	String filename= cmdLine.getParameter(0);
-    	outMgr.println(filename);
-    	String url=cmdLine.getParameter(1);
-    	File localFile= LocalFileController.readFile(url);
-    
-    	if(localFile==null) {
-    		outMgr.println("wrong directory, please try again");
-    		return;
-    	}
-    	if(remoteServer.checkFileExists(filename)) {
-    		outMgr.println("file already exists, please choose update command");
-    		return;
-    	}
-    	netController.sendFile(localFile, localOutputHandler);
-    	remoteServer.storeFile(this.myIdAtServer,filename);
-    	return;
-    }
-    private void permission(CmdLine cmdLine) throws Exception{
-    	if(!checkUserLoggedIn())return; 
-    	String filename= cmdLine.getParameter(0);
-    	String permission=cmdLine.getParameter(1);
-    	if(!(permission.equals("read")||permission.equals("write"))){
-    		outMgr.println("illegal permission");
-    		return;
-    	}
-    	if(!remoteServer.checkFileExists(filename)) {
-    		outMgr.println("file does not exist");
-    		return;
-    	}
-    	if(!remoteServer.checkFileOwner(myIdAtServer, filename)) {
-    		outMgr.println("you have no right to update this file");
-    		return;
-    	}else {
-    		if(remoteServer.changePermission(filename,permission)) {
-    			outMgr.println("update successful！");
-    		}else {
-    			outMgr.println("update failed");
-    		}
-    	}
-    	return;
-    }
-    private void retrieve(CmdLine cmdLine) throws Exception{
-    	if(!checkUserLoggedIn())return;
-    	String filename= cmdLine.getParameter(0);
-    	if(!remoteServer.checkFileExists(filename)) {
-    		outMgr.println("file does not exist");
-    		return;
-    	}
-    	String locationFolder=cmdLine.getParameter(1);
-    	remoteServer.sendFile(filename);
-    	netController.sendFileRequest(filename);
-    	return;
-    }
-    private void connect(CmdLine cmdLine) throws Exception{
-    	String host=cmdLine.getParameter(0);
-    	lookupServer(host);
-    	outMgr.println(host);
-    	netController.connect(host, SERVER_PORT, localOutputHandler);
-    	outMgr.println("successful connected to "+ remoteServer.SERVER_NAME_IN_REGISTRY);
-    	return;
-    }
-    private void register(CmdLine cmdLine) throws Exception{
-    	//lookupServer(cmdLine.getParameter(0));
-    	String username=cmdLine.getParameter(0);
-    	String password=cmdLine.getParameter(1);
-    	if(myIdAtServer!=0) {
-    		outMgr.println("you have already logged in, please log out");
-    		return;
-    	}
-    	if(remoteServer.checkUserExists(username)) {
-    		outMgr.println("user exists, please retry");
-    		return;
-    	}
-    	Credentials credentials=new Credentials(username,password);
-    	long newUserId=remoteServer.register(credentials);
-    	outMgr.println("welcome "+username+" ! You've registered! Your user Id is "+ newUserId);
-    	return;
-    }
-    private void login(CmdLine cmdLine) throws Exception{
-    	//lookupServer(cmdLine.getParameter(0));
-    	String username=cmdLine.getParameter(0);
-    	String password=cmdLine.getParameter(1);
-    	//outMgr.println("Test: username "+username);
-    	
-    	if(myIdAtServer!=0) {
-    		outMgr.println("you have already logged in, please log out");
-    		return;
-    		
-    	}
-    	if(!remoteServer.checkUserExists(username)) {
-    		outMgr.println("user does not exist, please retry");
-    		return;
-    	}
-    	Credentials credentials=new Credentials(username,password);
-    	this.myIdAtServer=remoteServer.login(myRemoteObj, credentials);
-    	if(myIdAtServer==0) {
-    		outMgr.println("user name does not match the password, please try again");
-    		return;
-    	}
-    	outMgr.println("welcome "+username+" ! You've logged in! Your user Id is"+ this.myIdAtServer);
-    	return;
-    }
-    private void listall(CmdLine cmdLine) throws Exception{
-    	if(!checkUserLoggedIn())return;
-    	remoteServer.listAll(myRemoteObj);
-    	return;
-    }
-    private void quit(CmdLine cmdLine) throws Exception{
-    	if(!checkUserLoggedIn()) {
-    		return; 
-    	}else {
-    		if(remoteServer.clientLeave(myIdAtServer)) {
-    			receivingCmds = false;
-    			this.remoteServer=null;
-    			this.myIdAtServer=0;
-    			boolean forceUnexport = false;
-                UnicastRemoteObject.unexportObject(myRemoteObj, forceUnexport);
-    			outMgr.println("succssfully quit");
-    		}
-    		else {
-    			outMgr.println("quit failed, please try again");
-    		}
-    	}
-    	return;
-    	
-    }
     /**
      * Starts the interpreter. The interpreter will be waiting for user input when this method
      * returns. Calling <code>start</code> on an interpreter that is already started has no effect.
@@ -301,72 +100,11 @@ public class NonBlockingInterpreter implements Runnable {
         receivingCmds = true;
         new Thread(this).start();
     }
-    /**
-     * utility
-     * @param filename
-     * @return
-     * @throws Exception
-     */
-    private boolean checkHavePermission(String filename) throws Exception{
-    	if(remoteServer.checkFilePermission(myIdAtServer,filename).equals("read")) {
-    		outMgr.println("you do not have permission to remove file");
-    		return false;
-    	}
-    	return true;
-    }
-    /**
-     * utility
-     * @return
-     */
-    private boolean checkUserLoggedIn() {
-    	if(myIdAtServer==0) {
-    		outMgr.println("you have not logged in");
-    		return false;
-    	}
-    	return true;
-    }
-    /**
-	 * look up for server in registry, get the remote controller stub
-	 */
-    private void lookupServer(String host) throws NotBoundException, MalformedURLException,
-                                                  RemoteException {
-        remoteServer = (RemoteServer) Naming.lookup(
-                "//" + host + "/" + RemoteServer.SERVER_NAME_IN_REGISTRY);
-    }
+   
     
     private String readNextLine() {
         outMgr.print(PROMPT);
         return console.nextLine();
     }
-	/**
-	 * 
-	 * a remote client instance： used to notify messages to client from server side
-	 *
-	 */
-    private class RemoteConsoleOutput extends UnicastRemoteObject implements RemoteClient{
-        public RemoteConsoleOutput() throws RemoteException {
-        }
-        @Override
-        public void notify(String msg) {
-        	outMgr.println(msg);
-        }
-    }
-    /**
-     * a local output handler instance
-     * pass msg and file from network layer to view layer
-     *
-     */
-    private class localConsoleOutput implements OutputHandler{
-		@Override
-          public void handleMsg(String msg) {
-              outMgr.println((String) msg);
-          }
-          @Override
-          public void handleFile(File file) {
-          	String filename=file.getName();
-          	outMgr.println(filename+" received");
-          	LocalFileController.makeDir(DEFAULT_LOCAL_FOLDER);
-          	LocalFileController.storeFile(DEFAULT_LOCAL_FOLDER, file);
-          }
-    }
+	
 }

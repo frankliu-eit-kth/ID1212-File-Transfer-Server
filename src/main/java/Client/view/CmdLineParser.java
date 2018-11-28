@@ -30,7 +30,7 @@ import java.util.List;
  * One line of user input, which should be a command and parameters associated with that command (if
  * any).
  */
-class CmdLine {
+class CmdLineParser {
     private static final String PARAM_DELIMETER = " ";
     private String[] params;
     private Command cmd;
@@ -41,7 +41,7 @@ class CmdLine {
      *
      * @param enteredLine A line that was entered by the user.
      */
-    CmdLine(String enteredLine) {
+    CmdLineParser(String enteredLine) {
         this.enteredLine = enteredLine;
         parseCmd(enteredLine);
         extractParams(enteredLine);

@@ -1,23 +1,90 @@
 package Client.view;
 
 import java.io.File;
+import java.net.MalformedURLException;
+import java.rmi.Naming;
+import java.rmi.NotBoundException;
+import java.rmi.RemoteException;
 import java.rmi.server.UnicastRemoteObject;
 
+import Client.controller.NetworkController;
+import Client.net.OutputHandler;
 import Common.Credentials;
 import Common.LocalFileController;
+import Common.RemoteClient;
+import Common.RemoteServer;
 
 public class CommandActions {
 	/**
      * local file folder
      */
-    public String DEFAULT_LOCAL_FOLDER="C:\\Users\\m1339\\Desktop\\CLIENT\\";
-    RemoteServer remoteServer;
-    RemoteClient remoteClient;
+    private String DEFAULT_LOCAL_FOLDER="C:\\Users\\m1339\\Desktop\\CLIENT\\";
+    /**
+     * remote-method-invoking objects
+     * myRemoteObj: created locally ( a RemoteOutputConsole) and pass to server through remote methods, used to handle the message( just like a remote output controller)
+     * remoteServer: the remote controller fetch from registry and invoke its methods locally do remote operations
+     */
+    private final RemoteClient myRemoteObj;
+    private RemoteServer remoteServer;
+    /**
+     * the local output handler pass to the network layer to deliver message and file
+     */
+    private final OutputHandler localOutputHandler;
+    /**
+     * user status
+     */
+    private long myIdAtServer;
+    private final ThreadSafeStdOut outMgr = new ThreadSafeStdOut();
+    /**
+     * network utilities and params
+     */
+    private NetworkController netController;
+    private final int SERVER_PORT=8080;
     
-	public CommandActions(RemoteServer remoteServer,RemoteClient myRemoteObj) {
-		// TODO Auto-generated constructor stub
+	public CommandActions() throws RemoteException {
+		 myRemoteObj = new RemoteConsoleOutput();
+	     localOutputHandler=new localConsoleOutput();
+	     netController=new NetworkController();
 	}
-	public void remove(CmdLine cmdLine) throws Exception {
+	 /**
+     * utility
+     * @param filename
+     * @return
+     * @throws Exception
+     */
+    public boolean checkHavePermission(String filename) throws Exception{
+    	if(remoteServer.checkFilePermission(myIdAtServer,filename).equals("read")) {
+    		outMgr.println("you do not have permission to remove file");
+    		return false;
+    	}
+    	return true;
+    }
+    /**
+     * utility
+     * @return
+     */
+    public boolean checkUserLoggedIn() {
+    	if(myIdAtServer==0) {
+    		outMgr.println("you have not logged in");
+    		return false;
+    	}
+    	return true;
+    }
+    /**
+	 * look up for server in registry, get the remote controller stub
+	 */
+    public void lookupServer(String host) throws NotBoundException, MalformedURLException,
+                                                  RemoteException {
+        remoteServer = (RemoteServer) Naming.lookup(
+                "//" + host + "/" + RemoteServer.SERVER_NAME_IN_REGISTRY);
+    }
+
+    /**
+     * remove file from server
+     * @param cmdLine
+     * @throws Exception
+     */
+    public void remove(CmdLineParser cmdLine) throws Exception {
     	if(!checkUserLoggedIn())return; 
     	String filename= cmdLine.getParameter(0);
     	if(!remoteServer.checkFileExists(filename)) {
@@ -28,7 +95,7 @@ public class CommandActions {
     		return;
     	}else {
     		if(remoteServer.removeFile(filename)) {
-    			outMgr.println("successfully remove");
+    			outMgr.println("successfully removed");
     			return;
     		}else {
     			outMgr.println("remove failed");
@@ -36,7 +103,13 @@ public class CommandActions {
     		}
     	}
     }
-    public void update(CmdLine cmdLine) throws Exception{
+    /**
+     * update file meta in database
+     * send new file to server and update in file directory
+     * @param cmdLine
+     * @throws Exception
+     */
+    public void update(CmdLineParser cmdLine) throws Exception{
     	if(!checkUserLoggedIn())return; 
     	
     	String filename= cmdLine.getParameter(0);
@@ -48,28 +121,45 @@ public class CommandActions {
     	if(!checkHavePermission(filename)) {
     		return;
     	}
-    	File localFile= LocalFileController.readFile(url);
-        
-    	if(localFile==null) {
-    		outMgr.println("wrong directory, please try again");
-    		return;
-    	}
+    	File localFile=null;
+    	
+		try {
+			localFile = LocalFileController.readFile(url);
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			outMgr.println("wrong directory, please try again");
+			return;
+		}
+        if(localFile==null) {
+        	outMgr.println("wrong file path, please try again");
+        	return;
+        }
     	netController.sendFile(localFile, localOutputHandler);
     	remoteServer.updateFile(this.myIdAtServer,filename);
-    	
     	return;
     }
-    public void store(CmdLine cmdLine) throws Exception{
+    /**
+     * store file meta in db
+     * store file in server directory
+     * @param cmdLine
+     * @throws Exception
+     */
+    public void store(CmdLineParser cmdLine) throws Exception{
     	if(!checkUserLoggedIn())return;
     	String filename= cmdLine.getParameter(0);
     	outMgr.println(filename);
     	String url=cmdLine.getParameter(1);
-    	File localFile= LocalFileController.readFile(url);
-    
-    	if(localFile==null) {
-    		outMgr.println("wrong directory, please try again");
-    		return;
-    	}
+    	File localFile=null;
+		try {
+			localFile = LocalFileController.readFile(url);
+		} catch (Exception e) {
+			outMgr.println("wrong directory, please try again");
+			return;
+		}
+        if(localFile==null) {
+        	outMgr.println("wrong file path, please try again");
+        	return;
+        }
     	if(remoteServer.checkFileExists(filename)) {
     		outMgr.println("file already exists, please choose update command");
     		return;
@@ -78,7 +168,12 @@ public class CommandActions {
     	remoteServer.storeFile(this.myIdAtServer,filename);
     	return;
     }
-    public void permission(CmdLine cmdLine) throws Exception{
+    /**
+     * update file permission in db
+     * @param cmdLine
+     * @throws Exception
+     */
+    public void permission(CmdLineParser cmdLine) throws Exception{
     	if(!checkUserLoggedIn())return; 
     	String filename= cmdLine.getParameter(0);
     	String permission=cmdLine.getParameter(1);
@@ -95,14 +190,19 @@ public class CommandActions {
     		return;
     	}else {
     		if(remoteServer.changePermission(filename,permission)) {
-    			outMgr.println("update successful！");
+    			outMgr.println("update succeeded");
     		}else {
     			outMgr.println("update failed");
     		}
     	}
     	return;
     }
-    public void retrieve(CmdLine cmdLine) throws Exception{
+    /**
+     * retrieve file from server and store in the file folder read from command line
+     * @param cmdLine
+     * @throws Exception
+     */
+    public void retrieve(CmdLineParser cmdLine) throws Exception{
     	if(!checkUserLoggedIn())return;
     	String filename= cmdLine.getParameter(0);
     	if(!remoteServer.checkFileExists(filename)) {
@@ -110,11 +210,19 @@ public class CommandActions {
     		return;
     	}
     	String locationFolder=cmdLine.getParameter(1);
+    	this.localOutputHandler.setFileFolder(locationFolder);
     	remoteServer.sendFile(filename);
     	netController.sendFileRequest(filename);
     	return;
     }
-    public void connect(CmdLine cmdLine) throws Exception{
+    /**
+     * connect to the file transfer server
+     * fetch stub from registry
+     * 
+     * @param cmdLine
+     * @throws Exception
+     */
+    public void connect(CmdLineParser cmdLine) throws Exception{
     	String host=cmdLine.getParameter(0);
     	lookupServer(host);
     	outMgr.println(host);
@@ -122,7 +230,12 @@ public class CommandActions {
     	outMgr.println("successful connected to "+ remoteServer.SERVER_NAME_IN_REGISTRY);
     	return;
     }
-    public void register(CmdLine cmdLine) throws Exception{
+    /**
+     * register new user account
+     * @param cmdLine
+     * @throws Exception
+     */
+    public void register(CmdLineParser cmdLine) throws Exception{
     	//lookupServer(cmdLine.getParameter(0));
     	String username=cmdLine.getParameter(0);
     	String password=cmdLine.getParameter(1);
@@ -139,7 +252,12 @@ public class CommandActions {
     	outMgr.println("welcome "+username+" ! You've registered! Your user Id is "+ newUserId);
     	return;
     }
-    public void login(CmdLine cmdLine) throws Exception{
+    /**
+     * login with username and password
+     * @param cmdLine
+     * @throws Exception
+     */
+    public void login(CmdLineParser cmdLine) throws Exception{
     	//lookupServer(cmdLine.getParameter(0));
     	String username=cmdLine.getParameter(0);
     	String password=cmdLine.getParameter(1);
@@ -163,17 +281,27 @@ public class CommandActions {
     	outMgr.println("welcome "+username+" ! You've logged in! Your user Id is"+ this.myIdAtServer);
     	return;
     }
-    public void listall(CmdLine cmdLine) throws Exception{
+    /**
+     * list all file metas
+     * @param cmdLine
+     * @throws Exception
+     */
+    public void listall(CmdLineParser cmdLine) throws Exception{
     	if(!checkUserLoggedIn())return;
     	remoteServer.listAll(myRemoteObj);
     	return;
     }
-    public void quit(CmdLine cmdLine) throws Exception{
+    /**
+     * quit the account and disconnect from server
+     * @param cmdLine
+     * @throws Exception
+     */
+    public void quit(CmdLineParser cmdLine) throws Exception{
     	if(!checkUserLoggedIn()) {
     		return; 
     	}else {
     		if(remoteServer.clientLeave(myIdAtServer)) {
-    			receivingCmds = false;
+    			
     			this.remoteServer=null;
     			this.myIdAtServer=0;
     			boolean forceUnexport = false;
@@ -186,5 +314,47 @@ public class CommandActions {
     	}
     	return;
     	
+    }
+	/**
+	 * 
+	 * a remote client instance： used to notify messages to client from server side
+	 *
+	 */
+    private class RemoteConsoleOutput extends UnicastRemoteObject implements RemoteClient{
+        public RemoteConsoleOutput() throws RemoteException {
+        }
+        @Override
+        public void notify(String msg) {
+        	outMgr.println(msg);
+        }
+    }
+    /**
+     * a local output handler instance
+     * pass msg and file from network layer to view layer
+     *
+     */
+    private class localConsoleOutput implements OutputHandler{
+    	private String localDirectory="";
+    	
+    	@Override
+    	public void setFileFolder(String fileFolder) {
+    		this.localDirectory=fileFolder;
+    	}
+		@Override
+          public void handleMsg(String msg) {
+              outMgr.println((String) msg);
+          }
+          @Override
+          public void handleFile(File file) {
+          	String filename=file.getName();
+          	outMgr.println(filename+" received");
+          	try {
+				LocalFileController.makeDir(localDirectory);
+			} catch (Exception e) {
+				System.out.println("illegal directory, please try again");
+				return;
+			}
+          	LocalFileController.storeFile(localDirectory, file);
+          }
     }
 }
