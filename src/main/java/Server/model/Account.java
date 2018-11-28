@@ -63,7 +63,10 @@ public class Account {
 	 @Version
 	 @Column(name = "OPTLOCK")//for optimistic lock
 	 private int versionNum;
-
+	 
+	public Account() {
+		
+	}
 	public Account(Credentials credentials) {
 		this.username=credentials.getUsername();
 		this.password=credentials.getPassword();

@@ -72,7 +72,7 @@ public class CommandActions {
      */
     public boolean checkUserLoggedIn() {
     	if(myIdAtServer==0) {
-    		outMgr.println("you have not logged in");
+    		outMgr.println("please log in first");
     		return false;
     	}
     	return true;
@@ -94,14 +94,14 @@ public class CommandActions {
     	if(!checkUserLoggedIn())return; 
     	String filename= cmdLine.getParameter(0);
     	if(!remoteServer.checkFileExists(filename)) {
-    		outMgr.println("file does not exist");
+    		outMgr.println("file not exist");
     		return;
     	}
     	if(!checkHavePermission(filename)) {
     		return;
     	}else {
     		if(remoteServer.removeFile(filename)) {
-    			outMgr.println("successfully removed");
+    			outMgr.println("remove done");
     			return;
     		}else {
     			outMgr.println("remove failed");
@@ -153,7 +153,7 @@ public class CommandActions {
     public void store(CmdLineParser cmdLine) throws Exception{
     	if(!checkUserLoggedIn())return;
     	String filename= cmdLine.getParameter(0);
-    	outMgr.println(filename);
+    	outMgr.println("sending "+filename);
     	String url=cmdLine.getParameter(1);
     	File localFile=null;
 		try {
@@ -167,7 +167,7 @@ public class CommandActions {
         	return;
         }
     	if(remoteServer.checkFileExists(filename)) {
-    		outMgr.println("file already exists, please choose update command");
+    		outMgr.println("file exists, please choose update command");
     		return;
     	}
     	netController.sendFile(localFile, localOutputHandler);
@@ -188,11 +188,11 @@ public class CommandActions {
     		return;
     	}
     	if(!remoteServer.checkFileExists(filename)) {
-    		outMgr.println("file does not exist");
+    		outMgr.println("file not exist");
     		return;
     	}
     	if(!remoteServer.checkFileOwner(myIdAtServer, filename)) {
-    		outMgr.println("you have no right to update this file");
+    		outMgr.println("you have no permission to update this file");
     		return;
     	}else {
     		if(remoteServer.changePermission(filename,permission)) {
@@ -212,7 +212,7 @@ public class CommandActions {
     	if(!checkUserLoggedIn())return;
     	String filename= cmdLine.getParameter(0);
     	if(!remoteServer.checkFileExists(filename)) {
-    		outMgr.println("file does not exist");
+    		outMgr.println("file not exist");
     		return;
     	}
     	String locationFolder=cmdLine.getParameter(1);
@@ -231,9 +231,8 @@ public class CommandActions {
     public void connect(CmdLineParser cmdLine) throws Exception{
     	String host=cmdLine.getParameter(0);
     	lookupServer(host);
-    	outMgr.println(host);
     	netController.connect(host, SERVER_PORT, localOutputHandler);
-    	outMgr.println("successful connected to "+ remoteServer.SERVER_NAME_IN_REGISTRY);
+    	//outMgr.println("successfully fetch remote controller "+ remoteServer.SERVER_NAME_IN_REGISTRY);
     	return;
     }
     /**
@@ -284,7 +283,7 @@ public class CommandActions {
     		outMgr.println("user name does not match the password, please try again");
     		return;
     	}
-    	outMgr.println("welcome "+username+" ! You've logged in! Your user Id is"+ this.myIdAtServer);
+    	outMgr.println("welcome "+username+" ! Your user Id is "+ this.myIdAtServer);
     	return;
     }
     /**
@@ -303,7 +302,9 @@ public class CommandActions {
      * @throws Exception
      */
     public void quit(CmdLineParser cmdLine) throws Exception{
-    	if(!checkUserLoggedIn()) {
+    	if(myIdAtServer==0) {
+    		netController.disconnect();
+    		outMgr.println("quit done");
     		return; 
     	}else {
     		if(remoteServer.clientLeave(myIdAtServer)) {
@@ -312,10 +313,11 @@ public class CommandActions {
     			this.myIdAtServer=0;
     			boolean forceUnexport = false;
                 UnicastRemoteObject.unexportObject(myRemoteObj, forceUnexport);
-    			outMgr.println("succssfully quit");
+                netController.disconnect();
+    			outMgr.println("quit done");
     		}
     		else {
-    			outMgr.println("quit failed, please try again");
+    			outMgr.println("quit failed");
     		}
     	}
     	return;
@@ -337,7 +339,7 @@ public class CommandActions {
      * pass msg and file from network layer to view layer
      */
     private class localConsoleOutput implements OutputHandler{
-    	private String localDirectory="";
+    	private String localDirectory=DEFAULT_LOCAL_FOLDER;
     	
     	@Override
     	public void setFileFolder(String fileFolder) {

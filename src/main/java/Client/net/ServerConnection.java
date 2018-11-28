@@ -40,6 +40,10 @@ public class ServerConnection {
     }
     
     public void disconnect() throws IOException {
+    	if(!connected) {
+    		return;
+    	}
+    	
         socket.close();
         socket = null;
         connected = false;
@@ -64,6 +68,7 @@ public class ServerConnection {
 		}
     }
     
+    
     private class Listener implements Runnable {
         private final OutputHandler outputHandler;
 
@@ -80,7 +85,7 @@ public class ServerConnection {
                     outputHandler.handleFile((File)fromServer.readObject());
                 }
             } catch (Throwable connectionFailure) {
-            	connectionFailure.printStackTrace();
+            	//connectionFailure.printStackTrace();
                 if (connected) {
                     outputHandler.handleMsg("Lost connection.");
                 }

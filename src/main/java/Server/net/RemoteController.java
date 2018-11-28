@@ -188,6 +188,12 @@ public class RemoteController extends UnicastRemoteObject implements RemoteServe
 			}
 			e.printStackTrace();
 		}
+		try {
+			clientConsole.notify("file stored");
+		} catch (RemoteException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 		
 	}
 	@Override

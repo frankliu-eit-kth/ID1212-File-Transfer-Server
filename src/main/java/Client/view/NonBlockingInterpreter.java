@@ -1,22 +1,8 @@
 
 package Client.view;
 
-import java.io.File;
-import java.net.MalformedURLException;
-import java.net.Socket;
-import java.rmi.Naming;
-import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
-import java.rmi.server.UnicastRemoteObject;
-import java.util.HashMap;
 import java.util.Scanner;
-
-import Client.controller.NetworkController;
-import Client.net.OutputHandler;
-import Common.Credentials;
-import Common.LocalFileController;
-import Common.RemoteClient;
-import Common.RemoteServer;
 
 /**
  * Reads and interprets user commands. The command interpreter will run in a separate thread, which

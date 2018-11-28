@@ -27,7 +27,7 @@ public class NetworkController {
             } catch (IOException ioe) {
                 throw new UncheckedIOException(ioe);
             }
-        }).thenRun(() -> outputHandler.handleMsg("Connected to " + host + ":" + port));
+        }).thenRun(() -> outputHandler.handleMsg("connected"));
     }
 	/**
 	 * send file through TCP blocking sockets in the network layer, if succeeded notify the view layer
@@ -36,10 +36,10 @@ public class NetworkController {
 		try {
 			serverConnection.sendFile(file);
 		}catch(Exception e) {
-			outputHandler.handleMsg("sending file failed, io exeception");
+			outputHandler.handleMsg("send file failed");
 			e.printStackTrace();
 		}
-		outputHandler.handleMsg("sending file successful");
+		//outputHandler.handleMsg("send file done");
 	}
 	/**
 	 * send filename to the file transfer server( not remote controller), 
@@ -49,4 +49,11 @@ public class NetworkController {
 	public void sendFileRequest(String filename) {
 		serverConnection.sendFilename(filename);
 	}
+	/**
+	 * same old function
+	 * @throws IOException
+	 */
+	public void disconnect() throws IOException {
+        serverConnection.disconnect();
+    }
 }
