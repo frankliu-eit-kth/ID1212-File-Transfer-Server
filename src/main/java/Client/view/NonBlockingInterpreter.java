@@ -1,26 +1,4 @@
-/*
- * The MIT License
- *
- * Copyright 2017 Leif Lindbäck <leifl@kth.se>.
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in
- * all copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
- * THE SOFTWARE.
- */
+
 package Client.view;
 
 import java.io.File;
@@ -56,6 +34,10 @@ public class NonBlockingInterpreter implements Runnable {
     private final ThreadSafeStdOut outMgr = new ThreadSafeStdOut();
     private boolean receivingCmds = false;
     /**
+     * local file folder
+     */
+    public String DEFAULT_LOCAL_FOLDER="C:\\Users\\m1339\\Desktop\\CLIENT\\";
+    /**
      * remote-method-invoking objects
      * myRemoteObj: created locally ( a RemoteOutputConsole) and pass to server through remote methods, used to handle the message( just like a remote output controller)
      * remoteServer: the remote controller fetch from registry and invoke its methods locally do remote operations
@@ -70,57 +52,24 @@ public class NonBlockingInterpreter implements Runnable {
      * user status
      */
     private long myIdAtServer;
+    
+    
     /**
      * network utilities and params
      */
     private NetworkController netController;
     private final int SERVER_PORT=8080;
-    /**
-     * local file folder
-     */
-    private String DEFAULT_LOCAL_FOLDER="C:\\Users\\m1339\\Desktop\\CLIENT\\";
+    
     
     public NonBlockingInterpreter() throws RemoteException {
         myRemoteObj = new RemoteConsoleOutput();
         localOutputHandler=new localConsoleOutput();
         netController=new NetworkController();
+       
     }
 
-    /**
-     * Starts the interpreter. The interpreter will be waiting for user input when this method
-     * returns. Calling <code>start</code> on an interpreter that is already started has no effect.
-     */
-    public void start() {
-        if (receivingCmds) {
-            return;
-        }
-        receivingCmds = true;
-        new Thread(this).start();
-    }
-    /**
-     * utility
-     * @return
-     */
-    private boolean checkUserLoggedIn() {
-    	if(myIdAtServer==0) {
-    		outMgr.println("you have not logged in");
-    		return false;
-    	}
-    	return true;
-    }
-    /**
-     * utility
-     * @param filename
-     * @return
-     * @throws Exception
-     */
-    private boolean checkHavePermission(String filename) throws Exception{
-    	if(remoteServer.checkFilePermission(myIdAtServer,filename).equals("read")) {
-    		outMgr.println("you do not have permission to remove file");
-    		return false;
-    	}
-    	return true;
-    }
+    
+    
     
     /**
      * Interprets and performs user commands.
@@ -161,7 +110,6 @@ public class NonBlockingInterpreter implements Runnable {
                 case QUIT:
                 	quit(cmdLine);
                 	break;
-                	
                 default:
                 	break;
                 } 
@@ -343,6 +291,41 @@ public class NonBlockingInterpreter implements Runnable {
     	
     }
     /**
+     * Starts the interpreter. The interpreter will be waiting for user input when this method
+     * returns. Calling <code>start</code> on an interpreter that is already started has no effect.
+     */
+    public void start() {
+        if (receivingCmds) {
+            return;
+        }
+        receivingCmds = true;
+        new Thread(this).start();
+    }
+    /**
+     * utility
+     * @param filename
+     * @return
+     * @throws Exception
+     */
+    private boolean checkHavePermission(String filename) throws Exception{
+    	if(remoteServer.checkFilePermission(myIdAtServer,filename).equals("read")) {
+    		outMgr.println("you do not have permission to remove file");
+    		return false;
+    	}
+    	return true;
+    }
+    /**
+     * utility
+     * @return
+     */
+    private boolean checkUserLoggedIn() {
+    	if(myIdAtServer==0) {
+    		outMgr.println("you have not logged in");
+    		return false;
+    	}
+    	return true;
+    }
+    /**
 	 * look up for server in registry, get the remote controller stub
 	 */
     private void lookupServer(String host) throws NotBoundException, MalformedURLException,
@@ -350,6 +333,7 @@ public class NonBlockingInterpreter implements Runnable {
         remoteServer = (RemoteServer) Naming.lookup(
                 "//" + host + "/" + RemoteServer.SERVER_NAME_IN_REGISTRY);
     }
+    
     private String readNextLine() {
         outMgr.print(PROMPT);
         return console.nextLine();
