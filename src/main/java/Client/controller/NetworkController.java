@@ -10,14 +10,12 @@ import Client.net.OutputHandler;
 import Client.net.ServerConnection;
 /**
  * 
- * @author Frank
+ * @author Liming Liu
  * @role provides functions invoked by view layer to complete network operations
  *
  */
 public class NetworkController {
-	/**
-	 * same old
-	 */
+	
 	private final ServerConnection serverConnection = new ServerConnection();
 	/**
 	 * same old

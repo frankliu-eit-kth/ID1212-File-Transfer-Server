@@ -7,7 +7,7 @@ import java.io.IOException;
 import java.nio.channels.FileChannel;
 /**
  * a file operating utility
- * @author m1339
+ * @author Liming Liu
  *
  */
 public class LocalFileController {

@@ -4,7 +4,7 @@ import java.io.File;
 /**
  * same old role
  * new function: pass file to the view
- * @author Frank
+ * @author Liming Liu
  *
  */
 public interface OutputHandler {

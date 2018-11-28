@@ -10,7 +10,11 @@ import javax.persistence.Persistence;
 import Common.Credentials;
 import Server.model.Account;
 import Server.model.FileMeta;
-
+/**
+ * 
+ * @author Liming Liu
+ *
+ */
 public class AccountDAO {
 	/**
 	 * use eneity manager factory create entity manager

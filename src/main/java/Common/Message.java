@@ -3,7 +3,7 @@ package Common;
 import java.io.Serializable;
 /**
  * a serializable wrapper for string message
- * @author m1339
+ * @author Liming Liu
  *
  */
 public class Message implements Serializable {
@@ -20,5 +20,4 @@ public class Message implements Serializable {
 	public void setMsg(String msg) {
 		this.msg = msg;
 	}
-	
 }

@@ -43,7 +43,7 @@ import Common.Credentials;
  * change to "create-and-drop" the old table will be deleted and new one will be created
  * 
  * 
- * @author Frank
+ * @author Liming Liu
  *
  */
 @Entity(name = "Account")

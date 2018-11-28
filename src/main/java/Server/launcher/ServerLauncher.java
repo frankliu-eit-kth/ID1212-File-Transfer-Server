@@ -9,7 +9,11 @@ import java.rmi.registry.Registry;
 import Server.net.FileTransferServer;
 import Server.net.RemoteController;
 
-
+/**
+ * 
+ * @author Liming Liu
+ *
+ */
 public class ServerLauncher {
 
 	 public static void main(String[] args) {

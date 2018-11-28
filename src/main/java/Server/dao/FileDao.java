@@ -14,7 +14,7 @@ import Server.model.FileMeta;
  * JPA dao
  * basic data access operations
  * @mechanism create entity manager factory->use factory to create entity manager->use entity manager to execute query and get results
- * @author Frank
+ * @author Liming Liu
  *
  */
 public class FileDao {

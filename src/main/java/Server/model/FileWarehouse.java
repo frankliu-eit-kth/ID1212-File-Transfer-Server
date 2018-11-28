@@ -9,7 +9,7 @@ import java.util.HashMap;
  * 					remote controller reads the file info, store file info in db and store the file in local folder
  * when sending: the remote controller gets the file url from database,  read the file, store in sending storage->
  * 				 the server unwrap the file request and gets the filename, then fetches the file from sending storage, then send to client
- * @author Frank
+ * @author Liming Liu
  *
  */
 public class FileWarehouse {

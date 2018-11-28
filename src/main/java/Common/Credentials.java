@@ -4,7 +4,7 @@ import java.io.Serializable;
 
 /**
  * Identifies a user.
- * @author Frank
+ * @author Liming Liu
  */
 public class Credentials implements Serializable {
     private final String username;

@@ -13,7 +13,7 @@ import Server.model.FileWarehouse;
  * same old
  * functions: receiving file->put in storage
  * 			  receiving retrieve request-> get file from storage->send file to client
- * @author Frank
+ * @author Liming Liu
  *
  */
 public class ClientHandler implements Runnable {

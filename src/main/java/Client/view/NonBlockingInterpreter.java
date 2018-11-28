@@ -23,7 +23,7 @@ import Common.RemoteServer;
  * is started by calling the <code>start</code> method. Commands are executed in a thread pool, a
  * new prompt will be displayed as soon as a command is submitted to the pool, without waiting for
  * command execution to complete.
- * @author Frank
+ * @author Liming Liu
  */
 public class NonBlockingInterpreter implements Runnable {
 	/**

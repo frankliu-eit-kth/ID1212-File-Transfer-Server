@@ -7,7 +7,7 @@ import Client.view.NonBlockingInterpreter;
 public class ClientLauncher {
 /**
  * same old
- * @author Frank
+ * @author Liming Liu
  * @param args
  * @throws RemoteException
  */

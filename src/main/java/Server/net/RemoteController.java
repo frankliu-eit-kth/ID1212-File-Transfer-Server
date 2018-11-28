@@ -21,7 +21,7 @@ import Server.model.FileWarehouse;
  * implements remote callee methods for server logic
  * mainly handles the operations related to database, fetching and storing file should be handled by the server
  * cooperates with the server by using FileWarehouse
- * @author Frank
+ * @author Liming Liu
  *
  */
 public class RemoteController extends UnicastRemoteObject implements RemoteServer {
@@ -42,12 +42,10 @@ public class RemoteController extends UnicastRemoteObject implements RemoteServe
 	public RemoteController() throws RemoteException {
 		super();
 	}
-	
 	@Override
 	public long register(Credentials credentials) throws RemoteException {
 		return acctDao.persistNewAccount(credentials);
 	}
-
 	@Override
 	public long login (RemoteClient remoteClient, Credentials credentials) throws RemoteException {
 			Account account= acctDao.FindAccountByName(credentials.getUsername(), true);
@@ -76,7 +74,6 @@ public class RemoteController extends UnicastRemoteObject implements RemoteServe
 			return file.getPermission();
 		}
 	}
-	
 	@Override
 	public boolean removeFile(String filename) throws RemoteException {
 		//first delete local file
@@ -87,9 +84,7 @@ public class RemoteController extends UnicastRemoteObject implements RemoteServe
 		if(!fileDao.removeFile(filename)) {
 			return false;
 		}
-		
 		return true;
-		
 	}
 	@Override
 	public boolean checkFileOwner(long userId, String filename) throws RemoteException {
@@ -100,7 +95,6 @@ public class RemoteController extends UnicastRemoteObject implements RemoteServe
 			return false;
 		}
 	}
-	
 	@Override
 	public boolean changePermission(String filename, String permission) throws RemoteException {
 		FileMeta file=fileDao.findFile(filename);
@@ -108,12 +102,10 @@ public class RemoteController extends UnicastRemoteObject implements RemoteServe
 		fileDao.updateFileMeta(file);
 		return true;
 	}
-	
 	@Override
 	public boolean checkFileExists(String filename) {
 		return fileDao.checkFileExists(filename);
 	}
-	
 	@Override
 	public boolean updateFile(long userId, String filename) throws RemoteException {
 		RemoteClient clientConsole= onlineClients.get((Long)userId);
@@ -198,7 +190,6 @@ public class RemoteController extends UnicastRemoteObject implements RemoteServe
 		}
 		
 	}
-	
 	@Override
 	public void listAll(RemoteClient remoteClient) throws RemoteException {
 		List<FileMeta> files=fileDao.findAll();
@@ -217,7 +208,6 @@ public class RemoteController extends UnicastRemoteObject implements RemoteServe
 			return true;
 		}		
 	}
-
 	@Override
 	public boolean clientLeave(long userId) throws RemoteException{
 		if(onlineClients.get(userId)==null) {

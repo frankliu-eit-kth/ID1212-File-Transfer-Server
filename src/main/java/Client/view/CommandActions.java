@@ -13,7 +13,11 @@ import Common.Credentials;
 import Common.LocalFileController;
 import Common.RemoteClient;
 import Common.RemoteServer;
-
+/**
+ * actions separated from nonblocking interpreter
+ * @author Liming Liu
+ *
+ */
 public class CommandActions {
 	/**
      * local file folder
@@ -40,7 +44,10 @@ public class CommandActions {
      */
     private NetworkController netController;
     private final int SERVER_PORT=8080;
-    
+    /**
+     * constructor
+     * @throws RemoteException
+     */
 	public CommandActions() throws RemoteException {
 		 myRemoteObj = new RemoteConsoleOutput();
 	     localOutputHandler=new localConsoleOutput();
@@ -78,7 +85,6 @@ public class CommandActions {
         remoteServer = (RemoteServer) Naming.lookup(
                 "//" + host + "/" + RemoteServer.SERVER_NAME_IN_REGISTRY);
     }
-
     /**
      * remove file from server
      * @param cmdLine
@@ -316,9 +322,7 @@ public class CommandActions {
     	
     }
 	/**
-	 * 
 	 * a remote client instance： used to notify messages to client from server side
-	 *
 	 */
     private class RemoteConsoleOutput extends UnicastRemoteObject implements RemoteClient{
         public RemoteConsoleOutput() throws RemoteException {
@@ -331,7 +335,6 @@ public class CommandActions {
     /**
      * a local output handler instance
      * pass msg and file from network layer to view layer
-     *
      */
     private class localConsoleOutput implements OutputHandler{
     	private String localDirectory="";
@@ -341,12 +344,12 @@ public class CommandActions {
     		this.localDirectory=fileFolder;
     	}
 		@Override
-          public void handleMsg(String msg) {
+        public void handleMsg(String msg) {
               outMgr.println((String) msg);
-          }
-          @Override
-          public void handleFile(File file) {
-          	String filename=file.getName();
+        }
+        @Override
+        public void handleFile(File file) {
+        	String filename=file.getName();
           	outMgr.println(filename+" received");
           	try {
 				LocalFileController.makeDir(localDirectory);
@@ -355,6 +358,6 @@ public class CommandActions {
 				return;
 			}
           	LocalFileController.storeFile(localDirectory, file);
-          }
+        }
     }
 }

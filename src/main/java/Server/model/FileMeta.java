@@ -36,7 +36,7 @@ import javax.persistence.OneToOne;
  * 
  * @problem: cascade relationship still not very clear
  * 
- * @author Frank
+ * @author Liming Liu
  *
  */
 @Entity(name = "File")

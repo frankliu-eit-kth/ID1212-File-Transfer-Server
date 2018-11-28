@@ -10,7 +10,7 @@ import java.net.Socket;
 import Common.Message;
 /**
  * mostly same old
- * @author Frank
+ * @author Liming Liu
  * @role sending filename in a message package
  * 		 send/receive file through TCP blocking socket
  *

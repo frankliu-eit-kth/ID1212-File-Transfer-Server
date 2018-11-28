@@ -5,7 +5,7 @@ import java.rmi.Remote;
 import java.rmi.RemoteException;
 /**
  * provides server interfaces the client could remotely invoke
- * @author Frank
+ * @author Liming Liu
  *
  */
 public interface RemoteServer extends Remote {
