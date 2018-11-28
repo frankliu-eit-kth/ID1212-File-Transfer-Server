@@ -45,11 +45,18 @@ import Common.RemoteServer;
  * is started by calling the <code>start</code> method. Commands are executed in a thread pool, a
  * new prompt will be displayed as soon as a command is submitted to the pool, without waiting for
  * command execution to complete.
+ * @author Frank
  */
 public class NonBlockingInterpreter implements Runnable {
+	/**
+	 * console objects
+	 */
     private static final String PROMPT = "> ";
     private final Scanner console = new Scanner(System.in);
     private final ThreadSafeStdOut outMgr = new ThreadSafeStdOut();
+    /**
+     * remote-method-invoking objects
+     */
     private final RemoteClient myRemoteObj;
     private final OutputHandler localOutputHandler;
     private RemoteServer remoteServer;
@@ -122,19 +129,19 @@ public class NonBlockingInterpreter implements Runnable {
                 	}
                 	filename= cmdLine.getParameter(0);
                 	if(!remoteServer.checkFileExists(filename)) {
-                		System.out.println("file does not exist");
+                		outMgr.println("file does not exist");
                 		break;
                 	}
                 	if(remoteServer.checkFilePermission(myIdAtServer,filename).equals("read")) {
-                		System.out.println("you do not have permission to remove file");
+                		outMgr.println("you do not have permission to remove file");
                 		break;
                 	}
                 	else {
                 		if(remoteServer.removeFile(filename)) {
-                			System.out.println("successfully remove");
+                			outMgr.println("successfully remove");
                 			break;
                 		}else {
-                			System.out.println("remove failed");
+                			outMgr.println("remove failed");
                 			break;
                 		}
                 		
@@ -148,17 +155,17 @@ public class NonBlockingInterpreter implements Runnable {
                 	filename= cmdLine.getParameter(0);
                 	url=cmdLine.getParameter(1);
                 	if(!remoteServer.checkFileExists(filename)) {
-                		System.out.println("file does not exist");
+                		outMgr.println("file does not exist");
                 		break;
                 	}
                 	if(remoteServer.checkFilePermission(myIdAtServer,filename).equals("read")) {
-                		System.out.println("you do not have permission to update file");
+                		outMgr.println("you do not have permission to update file");
                 		break;
                 	}
                 	localFile= LocalFileController.readFile(url);
                     
                 	if(localFile==null) {
-                		System.out.println("wrong directory, please try again");
+                		outMgr.println("wrong directory, please try again");
                 		break;
                 	}
                 	netController.sendFile(localFile, localOutputHandler);
@@ -171,16 +178,16 @@ public class NonBlockingInterpreter implements Runnable {
                 		break;
                 	}
                 	filename= cmdLine.getParameter(0);
-                	System.out.println(filename);
+                	outMgr.println(filename);
                 	url=cmdLine.getParameter(1);
                 	localFile= LocalFileController.readFile(url);
                 
                 	if(localFile==null) {
-                		System.out.println("wrong directory, please try again");
+                		outMgr.println("wrong directory, please try again");
                 		break;
                 	}
                 	if(remoteServer.checkFileExists(filename)) {
-                		System.out.println("file already exists, please choose update command");
+                		outMgr.println("file already exists, please choose update command");
                 		break;
                 	}
                 	netController.sendFile(localFile, localOutputHandler);
@@ -194,21 +201,21 @@ public class NonBlockingInterpreter implements Runnable {
                 	filename= cmdLine.getParameter(0);
                 	String permission=cmdLine.getParameter(1);
                 	if(!(permission.equals("read")||permission.equals("write"))){
-                		System.out.println("illegal permission");
+                		outMgr.println("illegal permission");
                 		break;
                 	}
                 	if(!remoteServer.checkFileExists(filename)) {
-                		System.out.println("file does not exist, please check the file name");
+                		outMgr.println("file does not exist, please check the file name");
                 		break;
                 	}
                 	if(!remoteServer.checkFileOwner(myIdAtServer, filename)) {
-                		System.out.println("you have no right to update this file");
+                		outMgr.println("you have no right to update this file");
                 		break;
                 	}else {
                 		if(remoteServer.changePermission(filename,permission)) {
-                			System.out.println("update successful！");
+                			outMgr.println("update successful！");
                 		}else {
-                			System.out.println("update failed");
+                			outMgr.println("update failed");
                 		}
                 	}
                 	break;
@@ -220,32 +227,31 @@ public class NonBlockingInterpreter implements Runnable {
                 	filename= cmdLine.getParameter(0);
                 	
                 	if(!remoteServer.checkFileExists(filename)) {
-                		System.out.println("file does not exist, please check the file name");
+                		outMgr.println("file does not exist, please check the file name");
                 		break;
                 	}
                 	String locationFolder=cmdLine.getParameter(1);
-                	Socket mySocket= netController.getSocket();
                 	remoteServer.sendFile(filename);
                 	netController.sendFileRequest(filename);
                 	break;
                 case CONNECT:
                 	String host=cmdLine.getParameter(0);
                 	lookupServer(host);
-                	System.out.println(host);
+                	outMgr.println(host);
                 	netController.connect(host, SERVER_PORT, localOutputHandler);
-                	System.out.println("successful connected to "+ remoteServer.SERVER_NAME_IN_REGISTRY);
+                	outMgr.println("successful connected to "+ remoteServer.SERVER_NAME_IN_REGISTRY);
                 	break;
                 case REGISTER:
                 	//lookupServer(cmdLine.getParameter(0));
                 	username=cmdLine.getParameter(0);
                 	password=cmdLine.getParameter(1);
                 	if(myIdAtServer!=0) {
-                		System.out.println("you have already logged in, please log out");
+                		outMgr.println("you have already logged in, please log out");
                 		break;
                 		
                 	}
                 	if(remoteServer.checkUserExists(username)) {
-                		System.out.println("user exists, please retry");
+                		outMgr.println("user exists, please retry");
                 		break;
                 	}
                 	credentials=new Credentials(username,password);
@@ -256,26 +262,26 @@ public class NonBlockingInterpreter implements Runnable {
                 	//lookupServer(cmdLine.getParameter(0));
                 	username=cmdLine.getParameter(0);
                 	password=cmdLine.getParameter(1);
-                	//System.out.println("Test: username "+username);
+                	//outMgr.println("Test: username "+username);
                 	
                 	if(myIdAtServer!=0) {
-                		System.out.println("you have already logged in, please log out");
+                		outMgr.println("you have already logged in, please log out");
                 		break;
                 		
                 	}
                 	if(!remoteServer.checkUserExists(username)) {
-                		System.out.println("user does not exist, please retry");
+                		outMgr.println("user does not exist, please retry");
                 		break;
                 	}
                 	credentials=new Credentials(username,password);
                 	this.myIdAtServer=remoteServer.login(myRemoteObj, credentials);
                 	if(myIdAtServer==0) {
-                		System.out.println("user name does not match the password, please try again");
+                		outMgr.println("user name does not match the password, please try again");
                 		break;
                 	}
                 	outMgr.println("welcome "+username+" ! You've logged in! Your user Id is"+ this.myIdAtServer);
                 	break;
-                case LIST_ALL:
+                case LISTALL:
                 	if(myIdAtServer==0) {
                 		outMgr.println("you have not logged in");
                 		break;

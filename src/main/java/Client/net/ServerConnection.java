@@ -8,27 +8,24 @@ import java.net.InetSocketAddress;
 import java.net.Socket;
 
 import Common.Message;
-
+/**
+ * mostly same old
+ * @author Frank
+ * @role sending filename in a message package
+ * 		 send/receive file through TCP blocking socket
+ *
+ */
 public class ServerConnection {
 
-	/*
-	 * @role: timeout params
-	 */
+	
 	private static final int TIMEOUT_HALF_HOUR = 1800000;
     private static final int TIMEOUT_HALF_MINUTE = 30000;
-    /*
-     * @role:the socket used for connection
-     */
+    
     private Socket socket;
-    /*
-     * @role: io streams for communication with the server
-     * @futhermore: hereby use the PrintWriter and BufferedReader to read text, and there are a lot kinds of other streams could be chosen from
-     */
+    
     private ObjectOutputStream toServer;
     private ObjectInputStream fromServer;
-    /*
-     * @role: flag used to maintain the life of a thread
-     */
+    
     private volatile boolean connected;
   
     public void connect(String host, int port, OutputHandler broadcastHandler) throws
@@ -37,7 +34,6 @@ public class ServerConnection {
          socket.connect(new InetSocketAddress(host, port), TIMEOUT_HALF_MINUTE);
          socket.setSoTimeout(TIMEOUT_HALF_HOUR);
          connected = true;
-         boolean autoFlush = true;
          toServer = new ObjectOutputStream(socket.getOutputStream());
          fromServer = new ObjectInputStream(socket.getInputStream());
          new Thread(new Listener(broadcastHandler)).start();
@@ -54,8 +50,8 @@ public class ServerConnection {
     	try {
 			toServer.writeObject(file);
 		} catch (Exception e) {
-			// TODO Auto-generated catch block
-			
+			//unsolved exception but does not affect the function, temporarily skip it
+			//e.printStackTrace();
 		}
     }
    
@@ -64,7 +60,6 @@ public class ServerConnection {
     		Message msg=new Message(filename);
 			toServer.writeObject(msg);
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
     }
@@ -92,11 +87,5 @@ public class ServerConnection {
             }
             
         }
- 
     }
-    
-    public Socket getSocket() {
-    	return this.socket;
-    }
-
 }
