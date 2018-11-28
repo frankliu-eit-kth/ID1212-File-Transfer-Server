@@ -54,21 +54,33 @@ public class NonBlockingInterpreter implements Runnable {
     private static final String PROMPT = "> ";
     private final Scanner console = new Scanner(System.in);
     private final ThreadSafeStdOut outMgr = new ThreadSafeStdOut();
+    private boolean receivingCmds = false;
     /**
      * remote-method-invoking objects
+     * myRemoteObj: created locally ( a RemoteOutputConsole) and pass to server through remote methods, used to handle the message( just like a remote output controller)
+     * remoteServer: the remote controller fetch from registry and invoke its methods locally do remote operations
      */
     private final RemoteClient myRemoteObj;
-    private final OutputHandler localOutputHandler;
     private RemoteServer remoteServer;
+    /**
+     * the local output handler pass to the network layer to deliver message and file
+     */
+    private final OutputHandler localOutputHandler;
+    /**
+     * user status
+     */
     private long myIdAtServer;
-    private boolean receivingCmds = false;
-    private HashMap<String,File> fileStorage=new HashMap<String,File>();
+    /**
+     * network utilities and params
+     */
     private NetworkController netController;
     private final int SERVER_PORT=8080;
+    /**
+     * local file folder
+     */
     private String DEFAULT_LOCAL_FOLDER="C:\\Users\\m1339\\Desktop\\CLIENT\\";
-
+    
     public NonBlockingInterpreter() throws RemoteException {
-    	//why remote-> send to server,invoked by server
         myRemoteObj = new RemoteConsoleOutput();
         localOutputHandler=new localConsoleOutput();
         netController=new NetworkController();
@@ -85,228 +97,71 @@ public class NonBlockingInterpreter implements Runnable {
         receivingCmds = true;
         new Thread(this).start();
     }
-
+    /**
+     * utility
+     * @return
+     */
+    private boolean checkUserLoggedIn() {
+    	if(myIdAtServer==0) {
+    		outMgr.println("you have not logged in");
+    		return false;
+    	}
+    	return true;
+    }
+    /**
+     * utility
+     * @param filename
+     * @return
+     * @throws Exception
+     */
+    private boolean checkHavePermission(String filename) throws Exception{
+    	if(remoteServer.checkFilePermission(myIdAtServer,filename).equals("read")) {
+    		outMgr.println("you do not have permission to remove file");
+    		return false;
+    	}
+    	return true;
+    }
+    
     /**
      * Interprets and performs user commands.
      */
     @Override
     public void run() {
         while (receivingCmds) {
-        	String username=null;
-        	String password=null;
-        	String filename=null;
-        	String url=null;
-        	Credentials credentials=null;
-        	File localFile=null;
             try {
                 CmdLine cmdLine = new CmdLine(readNextLine());
                 switch (cmdLine.getCmd()) {
-                /*
-                    case QUIT:
-                        receivingCmds = false;
-                        server.leaveConversation(myIdAtServer);
-                        boolean forceUnexport = false;
-                        UnicastRemoteObject.unexportObject(myRemoteObj, forceUnexport);
-                        break;
-                    case LOGIN:
-                        lookupServer(cmdLine.getParameter(0));
-                        myIdAtServer
-                                = server.login(myRemoteObj,
-                                               new Credentials(cmdLine.getParameter(1),
-                                                               cmdLine.getParameter(2)));
-                        break;
-                    case USER:
-                        server.changeNickname(myIdAtServer, cmdLine.getParameter(0));
-                        break;
-                    default:
-                        server.broadcastMsg(myIdAtServer, cmdLine.getUserInput());
-                }
-                */
                 case REMOVE:
-                	if(myIdAtServer==0) {
-                		outMgr.println("you have not logged in");
-                		break;
-                	}
-                	filename= cmdLine.getParameter(0);
-                	if(!remoteServer.checkFileExists(filename)) {
-                		outMgr.println("file does not exist");
-                		break;
-                	}
-                	if(remoteServer.checkFilePermission(myIdAtServer,filename).equals("read")) {
-                		outMgr.println("you do not have permission to remove file");
-                		break;
-                	}
-                	else {
-                		if(remoteServer.removeFile(filename)) {
-                			outMgr.println("successfully remove");
-                			break;
-                		}else {
-                			outMgr.println("remove failed");
-                			break;
-                		}
-                		
-                	}
+                	remove(cmdLine);
+                	break;
                 case UPDATE:
-                	if(myIdAtServer==0) {
-                		outMgr.println("you have not logged in");
-                		break;
-                	}
-                	
-                	filename= cmdLine.getParameter(0);
-                	url=cmdLine.getParameter(1);
-                	if(!remoteServer.checkFileExists(filename)) {
-                		outMgr.println("file does not exist");
-                		break;
-                	}
-                	if(remoteServer.checkFilePermission(myIdAtServer,filename).equals("read")) {
-                		outMgr.println("you do not have permission to update file");
-                		break;
-                	}
-                	localFile= LocalFileController.readFile(url);
-                    
-                	if(localFile==null) {
-                		outMgr.println("wrong directory, please try again");
-                		break;
-                	}
-                	netController.sendFile(localFile, localOutputHandler);
-                	remoteServer.updateFile(this.myIdAtServer,filename);
-                	
+                	update(cmdLine);
                 	break;
                 case STORE:
-                	if(myIdAtServer==0) {
-                		outMgr.println("you have not logged in");
-                		break;
-                	}
-                	filename= cmdLine.getParameter(0);
-                	outMgr.println(filename);
-                	url=cmdLine.getParameter(1);
-                	localFile= LocalFileController.readFile(url);
-                
-                	if(localFile==null) {
-                		outMgr.println("wrong directory, please try again");
-                		break;
-                	}
-                	if(remoteServer.checkFileExists(filename)) {
-                		outMgr.println("file already exists, please choose update command");
-                		break;
-                	}
-                	netController.sendFile(localFile, localOutputHandler);
-                	remoteServer.storeFile(this.myIdAtServer,filename);
+                	store(cmdLine);
                 	break;
                 case PERMISSION:
-                	if(myIdAtServer==0) {
-                		outMgr.println("you have not logged in");
-                		break;
-                	}
-                	filename= cmdLine.getParameter(0);
-                	String permission=cmdLine.getParameter(1);
-                	if(!(permission.equals("read")||permission.equals("write"))){
-                		outMgr.println("illegal permission");
-                		break;
-                	}
-                	if(!remoteServer.checkFileExists(filename)) {
-                		outMgr.println("file does not exist, please check the file name");
-                		break;
-                	}
-                	if(!remoteServer.checkFileOwner(myIdAtServer, filename)) {
-                		outMgr.println("you have no right to update this file");
-                		break;
-                	}else {
-                		if(remoteServer.changePermission(filename,permission)) {
-                			outMgr.println("update successful！");
-                		}else {
-                			outMgr.println("update failed");
-                		}
-                	}
+                	permission(cmdLine);
                 	break;
                 case RETRIEVE:
-                	if(myIdAtServer==0) {
-                		outMgr.println("you have not logged in");
-                		break;
-                	}
-                	filename= cmdLine.getParameter(0);
-                	
-                	if(!remoteServer.checkFileExists(filename)) {
-                		outMgr.println("file does not exist, please check the file name");
-                		break;
-                	}
-                	String locationFolder=cmdLine.getParameter(1);
-                	remoteServer.sendFile(filename);
-                	netController.sendFileRequest(filename);
+                	retrieve(cmdLine);
                 	break;
                 case CONNECT:
-                	String host=cmdLine.getParameter(0);
-                	lookupServer(host);
-                	outMgr.println(host);
-                	netController.connect(host, SERVER_PORT, localOutputHandler);
-                	outMgr.println("successful connected to "+ remoteServer.SERVER_NAME_IN_REGISTRY);
+                	connect(cmdLine);
                 	break;
                 case REGISTER:
-                	//lookupServer(cmdLine.getParameter(0));
-                	username=cmdLine.getParameter(0);
-                	password=cmdLine.getParameter(1);
-                	if(myIdAtServer!=0) {
-                		outMgr.println("you have already logged in, please log out");
-                		break;
-                		
-                	}
-                	if(remoteServer.checkUserExists(username)) {
-                		outMgr.println("user exists, please retry");
-                		break;
-                	}
-                	credentials=new Credentials(username,password);
-                	long newUserId=remoteServer.register(credentials);
-                	outMgr.println("welcome "+username+" ! You've registered! Your user Id is "+ newUserId);
+                	register(cmdLine);
                 	break;
                 case LOGIN:
-                	//lookupServer(cmdLine.getParameter(0));
-                	username=cmdLine.getParameter(0);
-                	password=cmdLine.getParameter(1);
-                	//outMgr.println("Test: username "+username);
-                	
-                	if(myIdAtServer!=0) {
-                		outMgr.println("you have already logged in, please log out");
-                		break;
-                		
-                	}
-                	if(!remoteServer.checkUserExists(username)) {
-                		outMgr.println("user does not exist, please retry");
-                		break;
-                	}
-                	credentials=new Credentials(username,password);
-                	this.myIdAtServer=remoteServer.login(myRemoteObj, credentials);
-                	if(myIdAtServer==0) {
-                		outMgr.println("user name does not match the password, please try again");
-                		break;
-                	}
-                	outMgr.println("welcome "+username+" ! You've logged in! Your user Id is"+ this.myIdAtServer);
+                	login(cmdLine);
                 	break;
                 case LISTALL:
-                	if(myIdAtServer==0) {
-                		outMgr.println("you have not logged in");
-                		break;
-                	}
-                	remoteServer.listAll(myRemoteObj);
+                	listall(cmdLine);
+                	break;
+                case QUIT:
+                	quit(cmdLine);
                 	break;
                 	
-                case QUIT:
-                	if(myIdAtServer==0) {
-                		outMgr.println("you have not logged in");
-                		break;
-                	}else {
-                		if(remoteServer.clientLeave(myIdAtServer)) {
-                			receivingCmds = false;
-                			this.remoteServer=null;
-                			this.myIdAtServer=0;
-                			boolean forceUnexport = false;
-                            UnicastRemoteObject.unexportObject(myRemoteObj, forceUnexport);
-                			outMgr.println("succssfully quit");
-                		}
-                		else {
-                			outMgr.println("quit failed, please try again");
-                		}
-                	}
-                	break;
                 default:
                 	break;
                 } 
@@ -317,41 +172,211 @@ public class NonBlockingInterpreter implements Runnable {
         }
     }
 
+    private void remove(CmdLine cmdLine) throws Exception {
+    	if(!checkUserLoggedIn())return; 
+    	String filename= cmdLine.getParameter(0);
+    	if(!remoteServer.checkFileExists(filename)) {
+    		outMgr.println("file does not exist");
+    		return;
+    	}
+    	if(!checkHavePermission(filename)) {
+    		return;
+    	}else {
+    		if(remoteServer.removeFile(filename)) {
+    			outMgr.println("successfully remove");
+    			return;
+    		}else {
+    			outMgr.println("remove failed");
+    			return;
+    		}
+    	}
+    }
+    private void update(CmdLine cmdLine) throws Exception{
+    	if(!checkUserLoggedIn())return; 
+    	
+    	String filename= cmdLine.getParameter(0);
+    	String url=cmdLine.getParameter(1);
+    	if(!remoteServer.checkFileExists(filename)) {
+    		outMgr.println("file does not exist");
+    		return;
+    	}
+    	if(!checkHavePermission(filename)) {
+    		return;
+    	}
+    	File localFile= LocalFileController.readFile(url);
+        
+    	if(localFile==null) {
+    		outMgr.println("wrong directory, please try again");
+    		return;
+    	}
+    	netController.sendFile(localFile, localOutputHandler);
+    	remoteServer.updateFile(this.myIdAtServer,filename);
+    	
+    	return;
+    }
+    private void store(CmdLine cmdLine) throws Exception{
+    	if(!checkUserLoggedIn())return;
+    	String filename= cmdLine.getParameter(0);
+    	outMgr.println(filename);
+    	String url=cmdLine.getParameter(1);
+    	File localFile= LocalFileController.readFile(url);
+    
+    	if(localFile==null) {
+    		outMgr.println("wrong directory, please try again");
+    		return;
+    	}
+    	if(remoteServer.checkFileExists(filename)) {
+    		outMgr.println("file already exists, please choose update command");
+    		return;
+    	}
+    	netController.sendFile(localFile, localOutputHandler);
+    	remoteServer.storeFile(this.myIdAtServer,filename);
+    	return;
+    }
+    private void permission(CmdLine cmdLine) throws Exception{
+    	if(!checkUserLoggedIn())return; 
+    	String filename= cmdLine.getParameter(0);
+    	String permission=cmdLine.getParameter(1);
+    	if(!(permission.equals("read")||permission.equals("write"))){
+    		outMgr.println("illegal permission");
+    		return;
+    	}
+    	if(!remoteServer.checkFileExists(filename)) {
+    		outMgr.println("file does not exist");
+    		return;
+    	}
+    	if(!remoteServer.checkFileOwner(myIdAtServer, filename)) {
+    		outMgr.println("you have no right to update this file");
+    		return;
+    	}else {
+    		if(remoteServer.changePermission(filename,permission)) {
+    			outMgr.println("update successful！");
+    		}else {
+    			outMgr.println("update failed");
+    		}
+    	}
+    	return;
+    }
+    private void retrieve(CmdLine cmdLine) throws Exception{
+    	if(!checkUserLoggedIn())return;
+    	String filename= cmdLine.getParameter(0);
+    	if(!remoteServer.checkFileExists(filename)) {
+    		outMgr.println("file does not exist");
+    		return;
+    	}
+    	String locationFolder=cmdLine.getParameter(1);
+    	remoteServer.sendFile(filename);
+    	netController.sendFileRequest(filename);
+    	return;
+    }
+    private void connect(CmdLine cmdLine) throws Exception{
+    	String host=cmdLine.getParameter(0);
+    	lookupServer(host);
+    	outMgr.println(host);
+    	netController.connect(host, SERVER_PORT, localOutputHandler);
+    	outMgr.println("successful connected to "+ remoteServer.SERVER_NAME_IN_REGISTRY);
+    	return;
+    }
+    private void register(CmdLine cmdLine) throws Exception{
+    	//lookupServer(cmdLine.getParameter(0));
+    	String username=cmdLine.getParameter(0);
+    	String password=cmdLine.getParameter(1);
+    	if(myIdAtServer!=0) {
+    		outMgr.println("you have already logged in, please log out");
+    		return;
+    	}
+    	if(remoteServer.checkUserExists(username)) {
+    		outMgr.println("user exists, please retry");
+    		return;
+    	}
+    	Credentials credentials=new Credentials(username,password);
+    	long newUserId=remoteServer.register(credentials);
+    	outMgr.println("welcome "+username+" ! You've registered! Your user Id is "+ newUserId);
+    	return;
+    }
+    private void login(CmdLine cmdLine) throws Exception{
+    	//lookupServer(cmdLine.getParameter(0));
+    	String username=cmdLine.getParameter(0);
+    	String password=cmdLine.getParameter(1);
+    	//outMgr.println("Test: username "+username);
+    	
+    	if(myIdAtServer!=0) {
+    		outMgr.println("you have already logged in, please log out");
+    		return;
+    		
+    	}
+    	if(!remoteServer.checkUserExists(username)) {
+    		outMgr.println("user does not exist, please retry");
+    		return;
+    	}
+    	Credentials credentials=new Credentials(username,password);
+    	this.myIdAtServer=remoteServer.login(myRemoteObj, credentials);
+    	if(myIdAtServer==0) {
+    		outMgr.println("user name does not match the password, please try again");
+    		return;
+    	}
+    	outMgr.println("welcome "+username+" ! You've logged in! Your user Id is"+ this.myIdAtServer);
+    	return;
+    }
+    private void listall(CmdLine cmdLine) throws Exception{
+    	if(!checkUserLoggedIn())return;
+    	remoteServer.listAll(myRemoteObj);
+    	return;
+    }
+    private void quit(CmdLine cmdLine) throws Exception{
+    	if(!checkUserLoggedIn()) {
+    		return; 
+    	}else {
+    		if(remoteServer.clientLeave(myIdAtServer)) {
+    			receivingCmds = false;
+    			this.remoteServer=null;
+    			this.myIdAtServer=0;
+    			boolean forceUnexport = false;
+                UnicastRemoteObject.unexportObject(myRemoteObj, forceUnexport);
+    			outMgr.println("succssfully quit");
+    		}
+    		else {
+    			outMgr.println("quit failed, please try again");
+    		}
+    	}
+    	return;
+    	
+    }
+    /**
+	 * look up for server in registry, get the remote controller stub
+	 */
     private void lookupServer(String host) throws NotBoundException, MalformedURLException,
                                                   RemoteException {
-    	//look up for server in registry
-    	//get the stub
         remoteServer = (RemoteServer) Naming.lookup(
                 "//" + host + "/" + RemoteServer.SERVER_NAME_IN_REGISTRY);
     }
-
     private String readNextLine() {
         outMgr.print(PROMPT);
         return console.nextLine();
     }
-
+	/**
+	 * 
+	 * a remote client instance： used to notify messages to client from server side
+	 *
+	 */
     private class RemoteConsoleOutput extends UnicastRemoteObject implements RemoteClient{
-
         public RemoteConsoleOutput() throws RemoteException {
         }
-        
         @Override
         public void notify(String msg) {
         	outMgr.println(msg);
         }
-       
-        
-      
     }
-    
+    /**
+     * a local output handler instance
+     * pass msg and file from network layer to view layer
+     *
+     */
     private class localConsoleOutput implements OutputHandler{
-    	
-
 		@Override
           public void handleMsg(String msg) {
               outMgr.println((String) msg);
           }
-          
           @Override
           public void handleFile(File file) {
           	String filename=file.getName();
