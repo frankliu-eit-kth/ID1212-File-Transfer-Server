@@ -149,14 +149,20 @@ public class RemoteController extends UnicastRemoteObject implements RemoteServe
 			e.printStackTrace();
 			return false;
 		}
+		clientConsole.notify("update done");
 		return true;
 		
 	}
+	/**
+	 * @debug: stuck at while loop: check if input the right filename:
+	 * 			windows files don't show file type: naming a file test.txt is actually test.txt.txt
+	 */
 	@Override
 	public void storeFile(long userId,String filename) {
 		RemoteClient clientConsole= onlineClients.get((Long)userId);
 		Account client=acctDao.FindAccountById(userId,true);
 		while(FileWarehouse.receivingStorage.get(filename)==null) {
+			
 		}
 		File file= FileWarehouse.receivingStorage.get(filename);
 		FileMeta filemeta=new FileMeta();

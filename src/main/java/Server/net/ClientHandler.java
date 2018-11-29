@@ -45,9 +45,12 @@ public class ClientHandler implements Runnable {
 			
 	            try {
 	            	Object obj=fromClient.readObject();
+	            	System.out.println("test receiving object "+obj.getClass().toString());
 	            	if(obj.getClass()==File.class) {
-		                File file= (File)fromClient.readObject();
+		                File file= (File)obj;
 		                String filename=file.getName();
+		                System.out.println("test: received file name "+ filename);
+		                System.out.println("test: received file length "+ file.length());
 		                FileWarehouse.receivingStorage.put(filename, file);
 	            	}else {
 	            		if(obj.getClass()==Message.class) {

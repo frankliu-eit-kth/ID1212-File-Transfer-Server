@@ -68,10 +68,13 @@ public class LocalFileController {
 	
 	public static void main(String[] args) {
 		// TODO Auto-generated method stub
-		LocalFileController thisController=new LocalFileController();
+		/*LocalFileController thisController=new LocalFileController();
 		File file=thisController.readFile("C:\\Software\\Java\\test directory\\test.txt");
 		System.out.println(file.length());
-		thisController.storeFile("C:\\Software\\Java\\test directory 1\\", file);
+		thisController.storeFile("C:\\Software\\Java\\test directory 1\\", file);*/
+		//LocalFileController thisController=new LocalFileController();
+		File file=LocalFileController.readFile("C:\\Users\\m1339\\Desktop\\CLIENT\\test1.txt");
+		System.out.println(file.length());
 	}
 
 }

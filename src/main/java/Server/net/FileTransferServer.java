@@ -41,6 +41,7 @@ public class FileTransferServer{
 			}
             while (true) {
                 Socket clientSocket = listeningSocket.accept();
+                System.out.println("test: accept client socket "+clientSocket.getRemoteSocketAddress() );
                 startHandler(clientSocket);
             }
         } catch (Exception e) {

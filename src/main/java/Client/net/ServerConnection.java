@@ -49,10 +49,14 @@ public class ServerConnection {
         connected = false;
     }
     
+    
     public void sendFile(File file) throws Exception{
     	
     	try {
+    		//System.out.println("test: file length "+file.length());
 			toServer.writeObject(file);
+			toServer.flush();
+		    toServer.reset();
 		} catch (Exception e) {
 			//unsolved exception but does not affect the function, temporarily skip it
 			//e.printStackTrace();
