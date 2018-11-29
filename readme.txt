@@ -8,7 +8,7 @@ About:
 		which stores file information. The actual file content is transmitted through TCP blocking sockets
 		and stored on a dedicated directory on server machine.
 	@Code source & Copyright:
-		I learned part of the structure and code from code example provided by the course: https://github.com/KTH-ID1212/nio
+		I learned part of the structure and code from code example provided by the course: https://github.com/KTH-ID1212
 		Here is the license of the code example:
 			/*
 			 * The MIT License
