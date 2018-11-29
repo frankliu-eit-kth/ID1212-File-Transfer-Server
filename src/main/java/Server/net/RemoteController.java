@@ -37,7 +37,7 @@ public class RemoteController extends UnicastRemoteObject implements RemoteServe
 	/**
 	 * dedicated server file directory
 	 */
-	public static final String SERVER_FILE_DIRECTORY="C:\\Users\\m1339\\Desktop\\SERVER\\";
+	public static final String SERVER_FILE_DIRECTORY="./ServerFileDirectory//";
 	
 	public RemoteController() throws RemoteException {
 		super();

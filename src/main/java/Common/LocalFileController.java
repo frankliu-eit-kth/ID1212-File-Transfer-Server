@@ -74,7 +74,7 @@ public class LocalFileController {
 		thisController.storeFile("C:\\Software\\Java\\test directory 1\\", file);*/
 		//LocalFileController thisController=new LocalFileController();
 		File file=LocalFileController.readFile("C:\\Users\\m1339\\Desktop\\CLIENT\\test1.txt");
-		System.out.println(file.length());
+		LocalFileController.storeFile("./ServerFileDirectory", file);
 	}
 
 }
